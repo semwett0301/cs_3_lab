@@ -38,7 +38,7 @@
                 "mode": "register"
             },
             {
-                "data": "HELLO",
+                "data": -3,
                 "mode": "relative"
             }
         ]

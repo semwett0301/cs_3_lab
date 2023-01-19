@@ -1,5 +1,21 @@
-from .isa import *
-from .preprocessor import *
+from src.translation.isa import *
+from src.translation.preprocessor import *
+from src.config import Register
+
+
+def resolve_variable(command: Command, variables: dict[str, int]):
+    if command.opcode in DataOpcodes:
+        for arg in command.args:
+            if arg.mode == AddrMode.ABS or arg.mode == AddrMode.REL:
+                if arg.data in variables.keys():
+                    if arg.mode == AddrMode.ABS:
+                        arg.data = variables[arg.data]
+                    else:
+                        print(command.opcode, command.position, variables[arg.data])
+                        arg.data = variables[arg.data] - command.position  - 1
+                assert not isinstance(arg.data, str), 'You use undefined variable'
+
+    return command
 
 
 def add_start_address(commands: list[Command], start_address: int):
@@ -15,15 +31,29 @@ def add_start_address(commands: list[Command], start_address: int):
     return result
 
 
-def join_text_and_data(text: list[Command], data: list[Command], isTextFirst: bool, start_addr: int):
-    if isTextFirst:
+def join_text_and_data(text: list[Command], data: list[Command], is_text_first: bool, variables: dict[str, int]):
+    offset: int = 0
+
+    if is_text_first:
         for command in data:
             command.position += len(text)
-        return text + data, start_addr
 
-    for command in text:
-        command.position += len(data)
-    return data + text, start_addr + len(data)
+        for name in variables.keys():
+            variables[name] += len(text)
+
+        result = text + data
+    else:
+        for command in text:
+            command.position += len(data)
+        result = data + text
+        offset = len(data)
+
+    for command in result:
+
+        print(command.opcode, command.position)
+        resolve_variable(command, variables)
+
+    return result, offset
 
 
 def parse_data(data: str) -> list:
@@ -60,7 +90,7 @@ def parse_data(data: str) -> list:
 
         addr_counter += 1
 
-    return result
+    return [result, variables]
 
 
 def parse_text(text: str) -> list:
@@ -160,6 +190,7 @@ def translate(source):
     code = preprocessing(source)
     text = []
     data = []
+    variables = {}
 
     text_i = code.find('section .text')
 
@@ -181,12 +212,12 @@ def translate(source):
         else:
             text_stop = data_i - 1
             data_stop = len(code)
-        data = parse_data(code[data_start:data_stop])
+        data, variables = parse_data(code[data_start:data_stop])
 
     text, start_addr = parse_text(code[text_start:text_stop])
 
-    joined_program, start_addr = join_text_and_data(text, data, data_i > text_i, start_addr)
-    result = add_start_address(joined_program, start_addr)
+    joined_program, offset = join_text_and_data(text, data, data_i > text_i, variables)
+    result = add_start_address(joined_program, start_addr + offset)
 
     return result
 
@@ -205,5 +236,5 @@ def main(args):
 
 
 if __name__ == '__main__':
-    sys.path.append('')
+    sys.path.append('.')
     main(sys.argv[1:])

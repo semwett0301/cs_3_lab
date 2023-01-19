@@ -1,13 +1,6 @@
 import json
 from enum import Enum
-
-
-class Register(str, Enum):
-    r1 = 'r1'
-    r2 = 'r2'
-    r3 = 'r3'
-    r4 = 'r4'
-    r5 = 'r5'
+from src.config import Register
 
 
 class Opcode(str, Enum):
@@ -87,6 +80,7 @@ class Encoder(json.JSONEncoder):
 
 
 def write_code(filename: str, code: list[Command]) -> None:
+    print(json.dumps(code, indent=4, cls=Encoder))
     with open(filename, "w", encoding="utf-8") as file:
         file.write(json.dumps(code, indent=4, cls=Encoder))
 

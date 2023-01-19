@@ -5,9 +5,9 @@ section .data
 section .text
 .start:
     .print_char:
-        LD %r1, (HELLO)
+        LD %r1, (H)
         CMP %r1,'0x0'
-        JE .exit
+        JE .exit ; ndjz vfnm ik.[; ffd
         ST #STDOUT, %r1
         INC %r1
         JMP .print_char
