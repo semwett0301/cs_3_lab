@@ -3,8 +3,8 @@ Unit-тесты для транслятора
 """
 
 import unittest
-import translation.translator as translator
-import translation.isa as isa
+import src.translation.translator as translator
+import src.translation.isa as isa
 
 
 class TranslatorTest(unittest.TestCase):
