@@ -19,13 +19,13 @@ class TranslatorTest(unittest.TestCase):
         self.assertEqual(result_code, correct_code)
 
     def test_cat(self):
-        self.simple_test("resources/source/cat.asm", "resources/result/cat.asm",
+        self.simple_test("../resources/source/cat.asm", "resources/result/cat.asm",
                          "resources/correct/cat.asm")
 
     def test_prob5(self):
-        self.simple_test("resources/source/prob5.asm", "resources/result/prob5.asm",
+        self.simple_test("../resources/source/prob5.asm", "resources/result/prob5.asm",
                          "resources/correct/prob5.asm")
 
     def test_hello_world(self):
-        self.simple_test("resources/source/hello.asm", "resources/result/hello.asm",
+        self.simple_test("../resources/source/hello.asm", "resources/result/hello.asm",
                          "resources/correct/hello.asm")
