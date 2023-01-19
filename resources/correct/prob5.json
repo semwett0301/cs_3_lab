@@ -1,0 +1,351 @@
+[
+    {
+        "opcode": "jmp",
+        "position": 1,
+        "args": [
+            {
+                "data": 0,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "xor",
+        "position": 2,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "ld",
+        "position": 3,
+        "args": [
+            {
+                "data": "r2",
+                "mode": "register"
+            },
+            {
+                "data": 1,
+                "mode": "absolute"
+            }
+        ]
+    },
+    {
+        "opcode": "mov",
+        "position": 4,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": 2,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "mov",
+        "position": 5,
+        "args": [
+            {
+                "data": "r4",
+                "mode": "register"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "inc",
+        "position": 6,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "cmp",
+        "position": 7,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": "r2",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "jg",
+        "position": 8,
+        "args": [
+            {
+                "data": 9,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "mov",
+        "position": 9,
+        "args": [
+            {
+                "data": "r3",
+                "mode": "register"
+            },
+            {
+                "data": 2,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "cmp",
+        "position": 10,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": "r3",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "je",
+        "position": 11,
+        "args": [
+            {
+                "data": -6,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "inc",
+        "position": 12,
+        "args": [
+            {
+                "data": "r3",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "cmp",
+        "position": 13,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": "r3",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "je",
+        "position": 14,
+        "args": [
+            {
+                "data": 1,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "jmp",
+        "position": 15,
+        "args": [
+            {
+                "data": -6,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "mul",
+        "position": 16,
+        "args": [
+            {
+                "data": "r4",
+                "mode": "register"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "jmp",
+        "position": 17,
+        "args": [
+            {
+                "data": -12,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "xor",
+        "position": 18,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "add",
+        "position": 19,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": "r4",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "xor",
+        "position": 20,
+        "args": [
+            {
+                "data": "r3",
+                "mode": "register"
+            },
+            {
+                "data": "r3",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "inc",
+        "position": 21,
+        "args": [
+            {
+                "data": "r3",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "cmp",
+        "position": 22,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": "r3",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "jne",
+        "position": 23,
+        "args": [
+            {
+                "data": -5,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "cmp",
+        "position": 24,
+        "args": [
+            {
+                "data": "r3",
+                "mode": "register"
+            },
+            {
+                "data": "r2",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "je",
+        "position": 25,
+        "args": [
+            {
+                "data": 1,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "jmp",
+        "position": 26,
+        "args": [
+            {
+                "data": -6,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "st",
+        "position": 27,
+        "args": [
+            {
+                "data": 2,
+                "mode": "absolute"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "st",
+        "position": 28,
+        "args": [
+            {
+                "data": 2,
+                "mode": "absolute"
+            },
+            {
+                "data": "\\n",
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "hlt",
+        "position": 29,
+        "args": []
+    }
+]

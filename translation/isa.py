@@ -91,14 +91,13 @@ def write_code(filename: str, code: list[Command]) -> None:
         file.write(json.dumps(code, indent=4, cls=Encoder))
 
 
-# def read_code(filename: str) -> object:
-#     with open(filename, encoding="utf-8") as file:
-#         code = json.loads(file.read())
-#
-#     for instr in code:
-#         instr['opcode'] = Opcode(instr['opcode'])
-#         if 'term' in instr:
-#             instr['term'] = Command(instr['term'][0], instr['term'][1],
-#                                     AddrMode(instr['term'][2]), instr['term'][3])
-#
-#     return code
+def read_code(filename: str) -> object:
+    with open(filename, encoding="utf-8") as file:
+        code = json.loads(file.read(), cls=Encoder)
+
+    for instr in code:
+        instr['opcode'] = Opcode(instr['opcode'])
+        for arg in instr['args']:
+            arg = Argument(AddrMode(arg['mode']), arg['data'])
+
+    return code

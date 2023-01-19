@@ -1,5 +1,5 @@
 section .data
-    HELLO: 'h'
+    H: 'h'
     A: 'a'
 
 section .text

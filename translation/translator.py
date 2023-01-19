@@ -151,7 +151,9 @@ def parse_text(text: str) -> list:
 
     for label in unresolved_labels.keys():
         for address, arg in unresolved_labels[label]:
-            command = result[address - 1].args[arg].data = labels[label] - command.position - 1
+            command = result[address - 1]
+
+            command.args[arg].data = labels[label] - command.position - 1
 
     return [result, start_addr]
 
