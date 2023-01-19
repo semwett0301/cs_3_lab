@@ -12,7 +12,7 @@ def resolve_variable(command: Command, variables: dict[str, int]):
                         arg.data = variables[arg.data]
                     else:
                         print(command.opcode, command.position, variables[arg.data])
-                        arg.data = variables[arg.data] - command.position  - 1
+                        arg.data = variables[arg.data] - command.position - 1
                 assert not isinstance(arg.data, str), 'You use undefined variable'
 
     return command
@@ -49,7 +49,6 @@ def join_text_and_data(text: list[Command], data: list[Command], is_text_first: 
         offset = len(data)
 
     for command in result:
-
         print(command.opcode, command.position)
         resolve_variable(command, variables)
 
