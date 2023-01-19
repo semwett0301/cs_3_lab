@@ -1,9 +1,8 @@
 import re
 import sys
-from enum import Enum
 
-from preprocessor import preprocessing
 from isa import Opcode, Command, Argument, AddrMode, Register, BranchOpcodes, RegisterOpcodes, DataOpcodes, write_code
+from preprocessor import preprocessing
 
 
 def add_start_address(commands: list[Command], start_address: int):
@@ -32,7 +31,7 @@ def join_text_and_data(text: list[Command], data: list[Command], isTextFirst: bo
 
 def parse_data(data: str) -> list:
     result = []
-    variables = {}
+    variables: dict[str, int] = {}
     addr_counter = 1
 
     for line in data.split('\n'):
@@ -58,7 +57,7 @@ def parse_data(data: str) -> list:
             try:
                 current_command.add_argument(Argument(AddrMode.DATA, int(value)))
             except ValueError:
-                raise Exception("You must write chars in single quotes")
+                raise ValueError("You must write chars in single quotes")
 
         result.append(current_command)
 
@@ -70,13 +69,13 @@ def parse_data(data: str) -> list:
 def parse_text(text: str) -> list:
     assert (text.find('.start:') != -1), 'Must have .start'
 
-    labels = {}
-    unresolved_labels = {}
+    labels: dict[str, int] = {}
+    unresolved_labels: dict[str, list[list[int]]] = {}
     start_addr = 0
 
     addr_counter = 1
 
-    result = []
+    result: list[Command] = []
 
     for instr in text.split('\n'):
 
@@ -119,7 +118,7 @@ def parse_text(text: str) -> list:
                 elif arg[0] == '#':
                     assert opcode in DataOpcodes, 'You cant access to memory not in ld and st command'
                     variable = arg[1:]
-                    address = variable
+                    address: str | int = variable
 
                     if variable == 'STDIN':
                         address = 1
@@ -141,7 +140,7 @@ def parse_text(text: str) -> list:
                         value = int(arg)
                         current_command.add_argument(Argument(AddrMode.DATA, value))
                     except ValueError:
-                        raise Exception("You must write chars in single quotes")
+                        raise ValueError("You must write chars in single quotes")
 
                 arg_counter += 1
 
@@ -150,10 +149,10 @@ def parse_text(text: str) -> list:
             addr_counter += 1
 
     for label in unresolved_labels.keys():
-        for address, arg in unresolved_labels[label]:
-            command = result[address - 1]
+        for info in unresolved_labels[label]:
+            command = result[info[0] - 1]
 
-            command.args[arg].data = labels[label] - command.position - 1
+            command.args[info[1]].data = labels[label] - command.position - 1
 
     return [result, start_addr]
 

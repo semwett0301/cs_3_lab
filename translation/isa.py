@@ -73,17 +73,17 @@ class Command:
     def __init__(self, opcode: Opcode, position: int):
         self.opcode = opcode
         self.position = position
-        self.args = []
+        self.args: list[Argument] = []
 
     def add_argument(self, arg: Argument):
         self.args.append(arg)
 
 
 class Encoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, Command) or isinstance(obj, Argument):
-            return obj.__dict__
-        return json.JSONEncoder.default(self, obj)
+    def default(self, o):
+        if isinstance(o, (Argument, Command)):
+            return o.__dict__
+        return json.JSONEncoder.default(self, o)
 
 
 def write_code(filename: str, code: list[Command]) -> None:
@@ -93,7 +93,7 @@ def write_code(filename: str, code: list[Command]) -> None:
 
 def read_code(filename: str) -> object:
     with open(filename, encoding="utf-8") as file:
-        code = json.loads(file.read(), cls=Encoder)
+        code = json.loads(file.read(), cls=Encoder)  # type: ignore
 
     for instr in code:
         instr['opcode'] = Opcode(instr['opcode'])
