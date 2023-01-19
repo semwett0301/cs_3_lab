@@ -85,6 +85,7 @@ class Encoder(json.JSONEncoder):
             return o.__dict__
         return json.JSONEncoder.default(self, o)
 
+
 def write_code(filename: str, code: list[Command]) -> None:
     with open(filename, "w", encoding="utf-8") as file:
         file.write(json.dumps(code, indent=4, cls=Encoder))

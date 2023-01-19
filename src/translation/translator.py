@@ -1,8 +1,5 @@
-import re
-import sys
-
-from isa import Opcode, Command, Argument, AddrMode, Register, BranchOpcodes, RegisterOpcodes, DataOpcodes, write_code
-from preprocessor import preprocessing
+from src.translation.isa import *
+from src.translation.preprocessor import *
 
 
 def add_start_address(commands: list[Command], start_address: int):
