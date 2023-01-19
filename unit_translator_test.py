@@ -3,8 +3,9 @@ Unit-тесты для транслятора
 """
 
 import unittest
-import translation.translator as translator
-import translation.isa as isa
+
+import translator
+import isa
 
 
 class TranslatorTest(unittest.TestCase):
@@ -19,13 +20,13 @@ class TranslatorTest(unittest.TestCase):
         self.assertEqual(result_code, correct_code)
 
     def test_cat(self):
-        self.simple_test("../resources/source/cat.asm", "resources/result/cat.asm",
-                         "resources/correct/cat.asm")
+        self.simple_test("resources/source/cat.asm", "resources/result/cat.json",
+                         "resources/correct/cat.json")
 
     def test_prob5(self):
-        self.simple_test("../resources/source/prob5.asm", "resources/result/prob5.asm",
-                         "resources/correct/prob5.asm")
+        self.simple_test("resources/source/prob5.asm", "resources/result/prob5.json",
+                         "resources/correct/prob5.json")
 
     def test_hello_world(self):
-        self.simple_test("../resources/source/hello.asm", "resources/result/hello.asm",
-                         "resources/correct/hello.asm")
+        self.simple_test("resources/source/hello.asm", "resources/result/hello.json",
+                         "resources/correct/hello.json")

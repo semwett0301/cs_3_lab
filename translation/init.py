@@ -3,4 +3,4 @@
 исходный путь поиска файлов для импорта.
 """
 import sys
-sys.path.append('.')
+sys.path.append('')
