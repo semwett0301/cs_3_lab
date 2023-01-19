@@ -1,4 +1,5 @@
 import re
+import sys
 
 
 def remove_comment(line: str) -> str:
