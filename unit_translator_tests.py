@@ -1,7 +1,7 @@
 import json
 import unittest
 
-import translation.translator
+from translation import translator
 from translation.isa import Encoder
 
 
@@ -11,7 +11,7 @@ class TestTranslator(unittest.TestCase):
         with open("resources/prob5.asm", "rt", encoding="utf-8") as file:
             text = file.read()
 
-        code = translation.translator.translate(text)
+        code = translator.translate(text)
         self.assertEqual([
             {
                 "opcode": "jmp",
