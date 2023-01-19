@@ -31,6 +31,21 @@ def add_start_address(commands: list[Command], start_address: int):
     return result
 
 
+def add_io_variables(commands: list[Command]):
+    for command in commands:
+        command.position += 2
+
+    commands.insert(0, Command(Opcode.DATA, 2))
+    commands[0].add_argument(Argument(AddrMode.DATA, 0))
+
+    commands.insert(0, Command(Opcode.DATA, 1))
+    commands[0].add_argument(Argument(AddrMode.DATA, 0))
+
+    return commands
+
+
+
+
 def join_text_and_data(text: list[Command], data: list[Command], is_text_first: bool, variables: dict[str, int]):
     offset: int = 0
 
@@ -216,7 +231,7 @@ def translate(source):
     text, start_addr = parse_text(code[text_start:text_stop])
 
     joined_program, offset = join_text_and_data(text, data, data_i > text_i, variables)
-    result = add_start_address(joined_program, start_addr + offset)
+    result = add_start_address(add_io_variables(joined_program), start_addr + offset)
 
     return result
 

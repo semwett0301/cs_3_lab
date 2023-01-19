@@ -10,8 +10,28 @@
         ]
     },
     {
-        "opcode": "xor",
+        "opcode": "data",
         "position": 2,
+        "args": [
+            {
+                "data": 0,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "data",
+        "position": 3,
+        "args": [
+            {
+                "data": 0,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "xor",
+        "position": 4,
         "args": [
             {
                 "data": "r1",
@@ -25,7 +45,7 @@
     },
     {
         "opcode": "ld",
-        "position": 3,
+        "position": 5,
         "args": [
             {
                 "data": "r2",
@@ -39,7 +59,7 @@
     },
     {
         "opcode": "mov",
-        "position": 4,
+        "position": 6,
         "args": [
             {
                 "data": "r1",
@@ -53,7 +73,7 @@
     },
     {
         "opcode": "mov",
-        "position": 5,
+        "position": 7,
         "args": [
             {
                 "data": "r4",
@@ -67,7 +87,7 @@
     },
     {
         "opcode": "inc",
-        "position": 6,
+        "position": 8,
         "args": [
             {
                 "data": "r1",
@@ -77,7 +97,7 @@
     },
     {
         "opcode": "cmp",
-        "position": 7,
+        "position": 9,
         "args": [
             {
                 "data": "r1",
@@ -91,7 +111,7 @@
     },
     {
         "opcode": "jg",
-        "position": 8,
+        "position": 10,
         "args": [
             {
                 "data": 9,
@@ -101,7 +121,7 @@
     },
     {
         "opcode": "mov",
-        "position": 9,
+        "position": 11,
         "args": [
             {
                 "data": "r3",
@@ -115,7 +135,7 @@
     },
     {
         "opcode": "cmp",
-        "position": 10,
+        "position": 12,
         "args": [
             {
                 "data": "r1",
@@ -129,7 +149,7 @@
     },
     {
         "opcode": "je",
-        "position": 11,
+        "position": 13,
         "args": [
             {
                 "data": -6,
@@ -139,7 +159,7 @@
     },
     {
         "opcode": "inc",
-        "position": 12,
+        "position": 14,
         "args": [
             {
                 "data": "r3",
@@ -149,7 +169,7 @@
     },
     {
         "opcode": "cmp",
-        "position": 13,
+        "position": 15,
         "args": [
             {
                 "data": "r1",
@@ -163,7 +183,7 @@
     },
     {
         "opcode": "je",
-        "position": 14,
+        "position": 16,
         "args": [
             {
                 "data": 1,
@@ -173,7 +193,7 @@
     },
     {
         "opcode": "jmp",
-        "position": 15,
+        "position": 17,
         "args": [
             {
                 "data": -6,
@@ -183,7 +203,7 @@
     },
     {
         "opcode": "mul",
-        "position": 16,
+        "position": 18,
         "args": [
             {
                 "data": "r4",
@@ -197,7 +217,7 @@
     },
     {
         "opcode": "jmp",
-        "position": 17,
+        "position": 19,
         "args": [
             {
                 "data": -12,
@@ -207,7 +227,7 @@
     },
     {
         "opcode": "xor",
-        "position": 18,
+        "position": 20,
         "args": [
             {
                 "data": "r1",
@@ -221,7 +241,7 @@
     },
     {
         "opcode": "add",
-        "position": 19,
+        "position": 21,
         "args": [
             {
                 "data": "r1",
@@ -235,7 +255,7 @@
     },
     {
         "opcode": "xor",
-        "position": 20,
+        "position": 22,
         "args": [
             {
                 "data": "r3",
@@ -249,7 +269,7 @@
     },
     {
         "opcode": "inc",
-        "position": 21,
+        "position": 23,
         "args": [
             {
                 "data": "r3",
@@ -259,7 +279,7 @@
     },
     {
         "opcode": "cmp",
-        "position": 22,
+        "position": 24,
         "args": [
             {
                 "data": "r1",
@@ -273,7 +293,7 @@
     },
     {
         "opcode": "jne",
-        "position": 23,
+        "position": 25,
         "args": [
             {
                 "data": -5,
@@ -283,7 +303,7 @@
     },
     {
         "opcode": "cmp",
-        "position": 24,
+        "position": 26,
         "args": [
             {
                 "data": "r3",
@@ -297,7 +317,7 @@
     },
     {
         "opcode": "je",
-        "position": 25,
+        "position": 27,
         "args": [
             {
                 "data": 1,
@@ -307,7 +327,7 @@
     },
     {
         "opcode": "jmp",
-        "position": 26,
+        "position": 28,
         "args": [
             {
                 "data": -6,
@@ -317,7 +337,7 @@
     },
     {
         "opcode": "st",
-        "position": 27,
+        "position": 29,
         "args": [
             {
                 "data": 2,
@@ -331,7 +351,7 @@
     },
     {
         "opcode": "st",
-        "position": 28,
+        "position": 30,
         "args": [
             {
                 "data": 2,
@@ -345,7 +365,7 @@
     },
     {
         "opcode": "hlt",
-        "position": 29,
+        "position": 31,
         "args": []
     }
 ]

@@ -10,8 +10,28 @@
         ]
     },
     {
-        "opcode": "ld",
+        "opcode": "data",
         "position": 2,
+        "args": [
+            {
+                "data": 0,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "data",
+        "position": 3,
+        "args": [
+            {
+                "data": 0,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "ld",
+        "position": 4,
         "args": [
             {
                 "data": "r2",
@@ -25,7 +45,7 @@
     },
     {
         "opcode": "cmp",
-        "position": 3,
+        "position": 5,
         "args": [
             {
                 "data": "r2",
@@ -39,7 +59,7 @@
     },
     {
         "opcode": "je",
-        "position": 4,
+        "position": 6,
         "args": [
             {
                 "data": 2,
@@ -49,7 +69,7 @@
     },
     {
         "opcode": "st",
-        "position": 5,
+        "position": 7,
         "args": [
             {
                 "data": 2,
@@ -63,7 +83,7 @@
     },
     {
         "opcode": "jmp",
-        "position": 6,
+        "position": 8,
         "args": [
             {
                 "data": -5,
@@ -73,7 +93,7 @@
     },
     {
         "opcode": "hlt",
-        "position": 7,
+        "position": 9,
         "args": []
     }
 ]

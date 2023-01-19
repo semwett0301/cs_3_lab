@@ -14,7 +14,7 @@
         "position": 2,
         "args": [
             {
-                "data": "h",
+                "data": 0,
                 "mode": "data"
             }
         ]
@@ -24,6 +24,26 @@
         "position": 3,
         "args": [
             {
+                "data": 0,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "data",
+        "position": 4,
+        "args": [
+            {
+                "data": "h",
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "data",
+        "position": 5,
+        "args": [
+            {
                 "data": "a",
                 "mode": "data"
             }
@@ -31,7 +51,7 @@
     },
     {
         "opcode": "ld",
-        "position": 4,
+        "position": 6,
         "args": [
             {
                 "data": "r1",
@@ -45,7 +65,7 @@
     },
     {
         "opcode": "cmp",
-        "position": 5,
+        "position": 7,
         "args": [
             {
                 "data": "r1",
@@ -59,7 +79,7 @@
     },
     {
         "opcode": "je",
-        "position": 6,
+        "position": 8,
         "args": [
             {
                 "data": 3,
@@ -69,7 +89,7 @@
     },
     {
         "opcode": "st",
-        "position": 7,
+        "position": 9,
         "args": [
             {
                 "data": 2,
@@ -83,7 +103,7 @@
     },
     {
         "opcode": "inc",
-        "position": 8,
+        "position": 10,
         "args": [
             {
                 "data": "r1",
@@ -93,7 +113,7 @@
     },
     {
         "opcode": "jmp",
-        "position": 9,
+        "position": 11,
         "args": [
             {
                 "data": -6,
@@ -103,7 +123,7 @@
     },
     {
         "opcode": "hlt",
-        "position": 10,
+        "position": 12,
         "args": []
     }
 ]
