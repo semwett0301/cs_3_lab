@@ -13,7 +13,7 @@ def add_start_address(commands: list[Command], start_address: int):
         command.position += 1
 
     jmp_start_addr = Command(Opcode.JMP, 1)
-    jmp_start_addr.addArgument(Argument(AddrMode.REL, start_address - 1))
+    jmp_start_addr.add_argument(Argument(AddrMode.REL, start_address - 1))
 
     result.insert(0, jmp_start_addr)
     return result
@@ -53,10 +53,10 @@ def parse_data(data: str) -> list:
             value = value[1:]
             assert value.find("'") == len(value) - 1, "You should close char with single quot"
             value = value[:-1]
-            current_command.addArgument(Argument(AddrMode.DATA, value))
+            current_command.add_argument(Argument(AddrMode.DATA, value))
         else:
             try:
-                current_command.addArgument(Argument(AddrMode.DATA, int(value)))
+                current_command.add_argument(Argument(AddrMode.DATA, int(value)))
             except ValueError:
                 raise Exception("You must write chars in single quotes")
 
@@ -102,7 +102,7 @@ def parse_text(text: str) -> list:
                 if arg[0] == '%':
                     assert Register(arg[1:].lower()) is not None, 'Register not found'
                     assert opcode in RegisterOpcodes, 'You cant use register in branch commands'
-                    current_command.addArgument(Argument(AddrMode.REG, Register(arg[1:].lower())))
+                    current_command.add_argument(Argument(AddrMode.REG, Register(arg[1:].lower())))
                 elif arg[0] == '.':
                     assert opcode in BranchOpcodes != -1, 'You cant use labels not in branch command'
                     addr = 0
@@ -115,7 +115,7 @@ def parse_text(text: str) -> list:
                             unresolved_labels[label] = []
                         unresolved_labels[label].append([addr_counter, arg_counter])
 
-                    current_command.addArgument(Argument(AddrMode.REL, addr))
+                    current_command.add_argument(Argument(AddrMode.REL, addr))
                 elif arg[0] == '#':
                     assert opcode in DataOpcodes, 'You cant access to memory not in ld and st command'
                     variable = arg[1:]
@@ -128,18 +128,18 @@ def parse_text(text: str) -> list:
                     elif variable == 'STDERR':
                         address = 3
 
-                    current_command.addArgument(Argument(AddrMode.ABS, address))
+                    current_command.add_argument(Argument(AddrMode.ABS, address))
                 elif arg[0] == '(':
                     assert opcode in DataOpcodes, 'You cant access to memory not in ld and st command'
                     assert arg.find(')') == len(arg) - 1, 'You must use ) after variable'
-                    current_command.addArgument(Argument(AddrMode.REL, arg[1:-1]))
+                    current_command.add_argument(Argument(AddrMode.REL, arg[1:-1]))
                 elif arg[0] == "'":
                     assert arg.split("'") != 3, "You must write chars in single quotes"
-                    current_command.addArgument(Argument(AddrMode.DATA, arg[1:-1]))
+                    current_command.add_argument(Argument(AddrMode.DATA, arg[1:-1]))
                 else:
                     try:
                         value = int(arg)
-                        current_command.addArgument(Argument(AddrMode.DATA, value))
+                        current_command.add_argument(Argument(AddrMode.DATA, value))
                     except ValueError:
                         raise Exception("You must write chars in single quotes")
 
@@ -151,9 +151,7 @@ def parse_text(text: str) -> list:
 
     for label in unresolved_labels.keys():
         for address, arg in unresolved_labels[label]:
-            command = result[address - 1]
-
-            command.args[arg].data = labels[label] - command.position - 1
+            command = result[address - 1].args[arg].data = labels[label] - command.position - 1
 
     return [result, start_addr]
 
