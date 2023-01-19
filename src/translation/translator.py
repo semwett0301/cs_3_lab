@@ -208,5 +208,5 @@ def main(args):
 
 
 if __name__ == '__main__':
-    sys.path.append('.')
+    sys.path.append('')
     main(sys.argv[1:])
