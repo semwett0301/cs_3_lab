@@ -1,5 +1,5 @@
-from src.translation.isa import *
-from src.translation.preprocessor import *
+from .isa import *
+from .preprocessor import *
 
 
 def add_start_address(commands: list[Command], start_address: int):
