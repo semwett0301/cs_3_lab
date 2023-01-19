@@ -158,14 +158,8 @@ def parse_text(text: str) -> list:
     return [result, start_addr]
 
 
-def main(args):
+def translate(source):
     """Функция запуска транслятора."""
-    assert len(args) == 2, \
-        "Wrong arguments: translator.py <asm_file> <target>"
-    source, target = args
-
-    with open(source, "rt", encoding="utf-8") as file:
-        source = file.read()
 
     code = preprocessing(source)
     text = []
@@ -198,10 +192,18 @@ def main(args):
     joined_program, start_addr = join_text_and_data(text, data, data_i > text_i, start_addr)
     result = add_start_address(joined_program, start_addr)
 
-    # for com in result:
-    #     print(com.opcode, com.position)
-    #     for arg in com.args:
-    #         print(arg.mode, arg.data)
+    return result
+
+
+def main(args):
+    assert len(args) == 2, \
+        "Wrong arguments: translation.py <asm_file> <target>"
+    source, target = args
+
+    with open(source, "rt", encoding="utf-8") as file:
+        source = file.read()
+
+    result = translate(source)
 
     write_code(args[1], result)
 
