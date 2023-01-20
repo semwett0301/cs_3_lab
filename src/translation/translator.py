@@ -89,8 +89,10 @@ def parse_data(data: str) -> list:
         if value[0] == "'":
             value = value[1:]
             assert value.find("'") == len(value) - 1, "You should close char with single quot"
-            value = value[:-1]
-            current_command.add_argument(Argument(AddrMode.DATA, value))
+            try:
+                current_command.add_argument(Argument(AddrMode.DATA, ord(value[:-1])))
+            except ValueError as e:
+                raise ValueError("You can't write a string as an argument, only a char") from e
         else:
             try:
                 current_command.add_argument(Argument(AddrMode.DATA, int(value)))
