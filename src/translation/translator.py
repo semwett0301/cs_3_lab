@@ -15,39 +15,37 @@ def add_start_address(commands: list[Operation], start_address: int):
     for command in result:
         command.position += 1
 
-    jmp_start_addr = Operation(Opcode.JMP, 1)
-    jmp_start_addr.add_argument(Argument(AddrMode.REL, start_address - 1))
+    jmp_start_addr = Operation(Opcode.JMP, 0)
+    jmp_start_addr.add_argument(Argument(AddrMode.REL, start_address))
 
     result.insert(0, jmp_start_addr)
     return result
 
 
-def add_io_variables(commands: list[Operation]) -> list[Operation]:
+def add_io_variables(commands: list[Operation]) -> tuple[list[Operation], int]:
     """Добавление ячеек под ввод и вывод"""
     for command in commands:
         command.position += 2
 
-    commands.insert(0, Operation(Opcode.DATA, 2))
-    commands[0].add_argument(Argument(AddrMode.DATA, 0))
-
     commands.insert(0, Operation(Opcode.DATA, 1))
     commands[0].add_argument(Argument(AddrMode.DATA, 0))
 
-    return commands
+    commands.insert(0, Operation(Opcode.DATA, 0))
+    commands[0].add_argument(Argument(AddrMode.DATA, 0))
+
+    return commands, 2
 
 
 def resolve_variable(command: Operation, variables: dict[str, int]) -> Operation:
     """Вставка значений переменных в команды"""
     if command.opcode in DataOpcodes:
         for arg in command.args:
-            print(command.opcode, arg.mode, arg.data)
-            if arg.mode in (AddrMode.ABS, AddrMode.REL) and arg.data in variables.keys():
-                addr = arg.data
+            if arg.mode in (AddrMode.ABS, AddrMode.REL) and isinstance(arg.data, str) and arg.data in variables:
 
                 if arg.mode == AddrMode.ABS:
-                    arg.data = variables[addr]
+                    arg.data = variables[arg.data]
                 else:
-                    arg.data = variables[addr] - command.position - 1
+                    arg.data = variables[arg.data] - command.position - 1
                 assert not isinstance(arg.data, str), 'You use undefined variable'
 
     return command
@@ -80,21 +78,23 @@ def join_text_and_data(text: list[Operation], data: list[Operation], is_text_fir
 
 def decode_register(operation: Operation, arg: str) -> Operation:
     """Вставка регистра в качестве аргумента"""
-    assert Register(arg[1:].lower()) is not None, 'Register not found'
+    assert Register(arg.lower()) is not None, 'Register not found'
     assert operation.opcode in RegisterOpcodes, 'You cant use register in branch commands'
-    return operation.add_argument(Argument(AddrMode.REG, Register(arg[1:].lower())))
+    operation.add_argument(Argument(AddrMode.REG, Register(arg.lower())))
+    return operation
 
 
-def decode_label(operation: Operation, arg: str, label_value: int | None) -> tuple[Operation, str | int]:
+def decode_label(operation: Operation, arg: str, labels: dict[str, int]) -> tuple[Operation, str | int]:
     """Вставка лейбла (его адреса) в качестве аргумента"""
     assert operation.opcode in BranchOpcodes != -1, 'You cant use labels not in branch command'
 
-    if label_value is not None:
-        addr: int | str = label_value - operation.position - 1
+    if arg in labels:
+        addr: int | str = labels[arg] - operation.position - 1
     else:
         addr = arg
+    operation.add_argument(Argument(AddrMode.REL, addr))
 
-    return operation.add_argument(Argument(AddrMode.REL, addr)), addr
+    return operation, addr
 
 
 def decode_absolute(operation: Operation, arg: str) -> Operation:
@@ -107,21 +107,25 @@ def decode_absolute(operation: Operation, arg: str) -> Operation:
     elif arg == 'STDOUT':
         address = 2
 
-    return operation.add_argument(Argument(AddrMode.ABS, address))
+    operation.add_argument(Argument(AddrMode.ABS, address))
+    return operation
 
 
 def decode_relative(operation: Operation, arg: str) -> Operation:
     """Вставка ячейки памяти с относительной адресацией в качестве аргумента"""
     assert operation.opcode in DataOpcodes, 'You cant access to memory not in ld and st command'
     assert arg.find(')') == len(arg) - 1, 'You must use ) after variable'
-    return operation.add_argument(Argument(AddrMode.REL, arg))
+    operation.add_argument(Argument(AddrMode.REL, arg[:-1]))
+
+    return operation
 
 
 def decode_char(operation: Operation, arg: str) -> Operation:
     """Вставка символа в качестве аргумента"""
-    assert arg.split("'") != 3, "You must write chars in single quotes"
+    assert arg.split("'") != 2, "You must write chars in single quotes"
     try:
-        return operation.add_argument(Argument(AddrMode.DATA, ord(arg[1:-1])))
+        operation.add_argument(Argument(AddrMode.DATA, ord(arg[:-1])))
+        return operation
     except ValueError as char_error:
         raise ValueError("You can't write a string as an argument, only a char") from char_error
 
@@ -130,7 +134,8 @@ def decode_int(operation: Operation, arg: str) -> Operation:
     """Вставка числа в качестве аргумента"""
     try:
         value = int(arg)
-        return operation.add_argument(Argument(AddrMode.DATA, value))
+        operation.add_argument(Argument(AddrMode.DATA, value))
+        return operation
     except ValueError as char_error:
         raise ValueError("You must write chars in single quotes") from char_error
 
@@ -142,7 +147,7 @@ def parse_data(data: str) -> list:
     addr_counter = 0
 
     for line in data.split('\n'):
-        current_command = Operation(Opcode.DATA, addr_counter)
+        current_operation = Operation(Opcode.DATA, addr_counter)
 
         var_description = line.split(':')
         assert len(var_description) == 2, 'You must write : only after name of variable'
@@ -152,13 +157,13 @@ def parse_data(data: str) -> list:
         assert name not in variables, 'Redefining a variable'
 
         if value[0] == "'":
-            current_command = decode_char(current_command, value[1:])
+            current_operation = decode_char(current_operation, value[1:])
         else:
-            current_command = decode_int(current_command, value)
+            current_operation = decode_int(current_operation, value)
 
         variables[name] = addr_counter
 
-        result.append(current_command)
+        result.append(current_operation)
 
         addr_counter += 1
 
@@ -172,7 +177,7 @@ def resolve_labels(operations: list[Operation], labels: dict[str, int],
         assert label_name in labels, 'You use undefined label'
 
         for operation_position, argument_number in params:
-            operation = operations[operation_position - 1]
+            operation = operations[operation_position]
             operation.args[argument_number].data = labels[label_name] - operation.position - 1
 
     return operations
@@ -208,16 +213,17 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
             assert Opcode(decoding[0].lower()) is not None, 'There is no such command'
 
             current_operation = Operation(Opcode(decoding[0].lower()), addr_counter)
+            print(current_operation)
             arg_counter = 0
             for arg in decoding[1:]:
                 if arg[0] == '%':
-                    current_operation = decode_register(current_operation, arg)
+                    current_operation = decode_register(current_operation, arg[1:])
                 elif arg[0] == '.':
-                    current_operation, current_label = decode_label(current_operation, arg[1:], labels[arg[1:]])
-                    if isinstance(current_label, str):
-                        if current_label not in unresolved_labels:
-                            unresolved_labels[current_label] = []
-                        unresolved_labels[current_label].append((addr_counter, arg_counter))
+                    current_operation, label = decode_label(current_operation, arg[1:], labels)
+                    if isinstance(label, str):
+                        if label not in unresolved_labels:
+                            unresolved_labels[label] = []
+                        unresolved_labels[label].append((addr_counter, arg_counter))
                 elif arg[0] == '#':
                     current_operation = decode_absolute(current_operation, arg[1:])
                 elif arg[0] == '(':
@@ -228,9 +234,7 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
                     current_operation = decode_int(current_operation, arg)
 
                 arg_counter += 1
-
             result.append(current_operation)
-
             addr_counter += 1
 
     result = resolve_labels(result, labels, unresolved_labels)
@@ -268,8 +272,9 @@ def translate(source: str) -> list[Operation]:
 
     text, start_addr = parse_text(code[text_start:text_stop])
 
-    joined_program, offset = join_text_and_data(text, data, data_i > text_i, variables)
-    result = add_start_address(add_io_variables(joined_program), start_addr + offset)
+    joined_program, data_offset = join_text_and_data(text, data, data_i > text_i, variables)
+    joined_program_with_io, io_offset = add_io_variables(joined_program)
+    result = add_start_address(joined_program_with_io, start_addr + data_offset + io_offset)
 
     return result
 
