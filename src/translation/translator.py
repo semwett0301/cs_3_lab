@@ -176,6 +176,7 @@ def parse_data(data: str) -> list:
 
 
 def check_address_or_variable_argument(operation: Operation, arg_num: int, mode: AddrMode):
+    """Проверяет корректность переданных аргументов в LD и ST"""
     if mode == AddrMode.ABS:
         argument = 'address'
     else:
@@ -184,6 +185,7 @@ def check_address_or_variable_argument(operation: Operation, arg_num: int, mode:
     assert operation.opcode == Opcode.ST and arg_num == 0 or \
            operation.opcode == Opcode.LD and arg_num == 1, \
         'You must use' + argument + 'in ST only as first argument and in LD only as second argument'
+
 
 def resolve_labels(operations: list[Operation], labels: dict[str, int],
                    unresolved_labels: dict[str, list[tuple[int, int]]]) -> list[Operation]:
