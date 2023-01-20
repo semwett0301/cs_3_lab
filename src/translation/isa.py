@@ -1,8 +1,10 @@
 """Модуль описания системы команд"""
 """Содержит методы кодирования и декодирования команд"""
-import json
+
 from enum import Enum
 from src.config import Register
+
+import json
 
 
 class Opcode(str, Enum):
