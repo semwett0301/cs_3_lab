@@ -1,4 +1,5 @@
 """Модуль описания системы команд"""
+"""Содержит методы кодирования и декодирования команд"""
 
 import json
 from enum import Enum
@@ -33,15 +34,17 @@ class Opcode(str, Enum):
     JNE = 'jne'
     JG = 'jg'
 
-
+# Коды операций, которым разрешен доступ к памяти
 DataOpcodes = (
     Opcode.LD, Opcode.ST
 )
 
+# Коды операций, которым разрешена адресация по лейблам
 BranchOpcodes = (
     Opcode.JG, Opcode.JMP, Opcode.JE, Opcode.JNE
 )
 
+# Коды операций, которым разрешена работа с регистрами
 RegisterOpcodes = (
     Opcode.ADD, Opcode.DEC, Opcode.INC, Opcode.DIV, Opcode.SUB, Opcode.MUL, Opcode.MOD, Opcode.MOV, Opcode.XOR,
     Opcode.CMP, Opcode.LD, Opcode.ST

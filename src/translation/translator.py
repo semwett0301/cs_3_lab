@@ -3,8 +3,9 @@
 import sys
 
 from src.config import Register
-from src.translation.isa import *
-from src.translation.preprocessor import *
+from src.translation.isa import Opcode, Operation, Argument, AddrMode, DataOpcodes, BranchOpcodes, RegisterOpcodes, \
+    write_code
+from src.translation.preprocessor import preprocessing
 
 
 def add_start_address(commands: list[Operation], start_address: int):
@@ -37,7 +38,7 @@ def resolve_variable(command: Operation, variables: dict[str, int]) -> Operation
     if command.opcode in DataOpcodes:
         for arg in command.args:
             print(command.opcode, arg.mode, arg.data)
-            if (arg.mode == AddrMode.ABS or arg.mode == AddrMode.REL) and arg.data in variables.keys():
+            if arg.mode in (AddrMode.ABS, AddrMode.REL) and arg.data in variables.keys():
                 if arg.mode == AddrMode.ABS:
                     arg.data = variables[arg.data]
                 else:
@@ -94,8 +95,8 @@ def parse_data(data: str) -> list:
         else:
             try:
                 current_command.add_argument(Argument(AddrMode.DATA, int(value)))
-            except ValueError:
-                raise ValueError("You must write chars in single quotes")
+            except ValueError as e:
+                raise ValueError("You must write chars in single quotes") from e
 
         variables[name] = addr_counter
 
@@ -110,7 +111,7 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
     assert (text.find('.start:') != -1), 'Must have .start'
 
     labels: dict[str, int] = {}
-    unresolved_labels: dict[str, list[list[int]]] = {}
+    unresolved_labels: dict[str, list[tuple[int, int]]] = {}
     start_addr = 0
 
     addr_counter = 1
@@ -188,11 +189,11 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
 
             addr_counter += 1
 
-    for label in unresolved_labels.keys():
-        for info in unresolved_labels[label]:
-            command = result[info[0] - 1]
+    for label in unresolved_labels.items():
+        for command_position, argument_number in label:
+            command = result[command_position - 1]
 
-            command.args[info[1]].data = labels[label] - command.position - 1
+            command.args[argument_number].data = label - command.position - 1
 
     return result, start_addr
 
@@ -237,7 +238,7 @@ def translate(source: str) -> list[Operation]:
 def main(args):
     assert len(args) == 2, \
         "Wrong arguments: translation.py <asm_file> <target>"
-    source, target = args
+    source = args
 
     with open(source, "rt", encoding="utf-8") as file:
         source = file.read()
