@@ -1,5 +1,5 @@
 """Модуль транслятора"""
-
+import re
 import sys
 
 from src.config import Register
@@ -238,12 +238,12 @@ def translate(source: str) -> list[Operation]:
 def main(args):
     assert len(args) == 2, \
         "Wrong arguments: translation.py <asm_file> <target>"
-    source = args
+    source = args[0]
 
     with open(source, "rt", encoding="utf-8") as file:
-        source = file.read()
+        code = file.read()
 
-    result = translate(source)
+    result = translate(code)
 
     write_code(args[1], result)
 
