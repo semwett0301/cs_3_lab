@@ -60,7 +60,7 @@ class Argument:
         self.mode = mode
 
 
-class Command:
+class Operation:
     """Полное описание инструкции."""
 
     def __init__(self, opcode: Opcode, position: int):
@@ -74,12 +74,12 @@ class Command:
 
 class Encoder(json.JSONEncoder):
     def default(self, o):
-        if isinstance(o, (Argument, Command)):
+        if isinstance(o, (Argument, Operation)):
             return o.__dict__
         return json.JSONEncoder.default(self, o)
 
 
-def write_code(filename: str, code: list[Command]) -> None:
+def write_code(filename: str, code: list[Operation]) -> None:
     print(json.dumps(code, indent=4, cls=Encoder))
     with open(filename, "w", encoding="utf-8") as file:
         file.write(json.dumps(code, indent=4, cls=Encoder))

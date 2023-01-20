@@ -1,52 +1,52 @@
+import sys
+
+from src.config import Register
 from src.translation.isa import *
 from src.translation.preprocessor import *
-from src.config import Register
 
 
-def resolve_variable(command: Command, variables: dict[str, int]):
-    if command.opcode in DataOpcodes:
-        for arg in command.args:
-            if arg.mode == AddrMode.ABS or arg.mode == AddrMode.REL:
-                if arg.data in variables.keys():
-                    if arg.mode == AddrMode.ABS:
-                        arg.data = variables[arg.data]
-                    else:
-                        print(command.opcode, command.position, variables[arg.data])
-                        arg.data = variables[arg.data] - command.position - 1
-                assert not isinstance(arg.data, str), 'You use undefined variable'
-
-    return command
-
-
-def add_start_address(commands: list[Command], start_address: int):
+def add_start_address(commands: list[Operation], start_address: int):
     result = commands.copy()
 
     for command in result:
         command.position += 1
 
-    jmp_start_addr = Command(Opcode.JMP, 1)
+    jmp_start_addr = Operation(Opcode.JMP, 1)
     jmp_start_addr.add_argument(Argument(AddrMode.REL, start_address - 1))
 
     result.insert(0, jmp_start_addr)
     return result
 
 
-def add_io_variables(commands: list[Command]):
+def add_io_variables(commands: list[Operation]) -> list[Operation]:
     for command in commands:
         command.position += 2
 
-    commands.insert(0, Command(Opcode.DATA, 2))
+    commands.insert(0, Operation(Opcode.DATA, 2))
     commands[0].add_argument(Argument(AddrMode.DATA, 0))
 
-    commands.insert(0, Command(Opcode.DATA, 1))
+    commands.insert(0, Operation(Opcode.DATA, 1))
     commands[0].add_argument(Argument(AddrMode.DATA, 0))
 
     return commands
 
 
+def resolve_variable(command: Operation, variables: dict[str, int]) -> Operation:
+    if command.opcode in DataOpcodes:
+        for arg in command.args:
+            print(command.opcode, arg.mode, arg.data)
+            if (arg.mode == AddrMode.ABS or arg.mode == AddrMode.REL) and arg.data in variables.keys():
+                if arg.mode == AddrMode.ABS:
+                    arg.data = variables[arg.data]
+                else:
+                    arg.data = variables[arg.data] - command.position - 1
+                assert not isinstance(arg.data, str), 'You use undefined variable'
+
+    return command
 
 
-def join_text_and_data(text: list[Command], data: list[Command], is_text_first: bool, variables: dict[str, int]):
+def join_text_and_data(text: list[Operation], data: list[Operation], is_text_first: bool, variables: dict[str, int]) -> \
+        tuple[list[Operation], int]:
     offset: int = 0
 
     if is_text_first:
@@ -64,7 +64,6 @@ def join_text_and_data(text: list[Command], data: list[Command], is_text_first: 
         offset = len(data)
 
     for command in result:
-        print(command.opcode, command.position)
         resolve_variable(command, variables)
 
     return result, offset
@@ -76,18 +75,14 @@ def parse_data(data: str) -> list:
     addr_counter = 1
 
     for line in data.split('\n'):
-        current_command = Command(Opcode.DATA, addr_counter)
+        current_command = Operation(Opcode.DATA, addr_counter)
 
         var_description = line.split(':')
         assert len(var_description) == 2, 'You must write : only after name of variable'
 
-        name = var_description[0]
+        name, value = var_description[0], re.sub(r'\s+', '', var_description[1])
         assert name[0][-1] != ' ', 'You must write : only after variable name'
-
-        value = re.sub(r'\s+', '', var_description[1])
-
         assert name not in variables.keys(), 'Redefining a variable'
-        variables[name] = addr_counter
 
         if value[0] == "'":
             value = value[1:]
@@ -100,6 +95,8 @@ def parse_data(data: str) -> list:
             except ValueError:
                 raise ValueError("You must write chars in single quotes")
 
+        variables[name] = addr_counter
+
         result.append(current_command)
 
         addr_counter += 1
@@ -107,7 +104,7 @@ def parse_data(data: str) -> list:
     return [result, variables]
 
 
-def parse_text(text: str) -> list:
+def parse_text(text: str) -> tuple[list[Operation], int]:
     assert (text.find('.start:') != -1), 'Must have .start'
 
     labels: dict[str, int] = {}
@@ -116,7 +113,7 @@ def parse_text(text: str) -> list:
 
     addr_counter = 1
 
-    result: list[Command] = []
+    result: list[Operation] = []
 
     for instr in text.split('\n'):
 
@@ -136,7 +133,7 @@ def parse_text(text: str) -> list:
             assert Opcode(decoding[0].lower()) is not None, 'There is no such command'
 
             opcode = Opcode(decoding[0].lower())
-            current_command = Command(opcode, addr_counter)
+            current_command = Operation(opcode, addr_counter)
             arg_counter = 0
             for arg in decoding[1:]:
                 if arg[0] == '%':
@@ -195,14 +192,13 @@ def parse_text(text: str) -> list:
 
             command.args[info[1]].data = labels[label] - command.position - 1
 
-    return [result, start_addr]
+    return result, start_addr
 
 
-def translate(source):
+def translate(source: str) -> list[Operation]:
     """Функция запуска транслятора."""
 
     code = preprocessing(source)
-    text = []
     data = []
     variables = {}
 
