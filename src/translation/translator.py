@@ -1,7 +1,6 @@
 """Модуль транслятора"""
 import re
 import sys
-
 from src.config import Register
 from src.translation.isa import Opcode, Operation, Argument, AddrMode, DataOpcodes, BranchOpcodes, RegisterOpcodes, \
     write_code

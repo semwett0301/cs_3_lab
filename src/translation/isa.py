@@ -34,6 +34,7 @@ class Opcode(str, Enum):
     JNE = 'jne'
     JG = 'jg'
 
+
 # Коды операций, которым разрешен доступ к памяти
 DataOpcodes = (
     Opcode.LD, Opcode.ST
@@ -61,6 +62,7 @@ class AddrMode(str, Enum):
 
 class Argument:
     """Аргуемент операции"""
+
     def __init__(self, mode: AddrMode, data: int | Register | str):
         self.data = data
         self.mode = mode
@@ -80,6 +82,7 @@ class Operation:
 
 class Encoder(json.JSONEncoder):
     """Класс-энкодер для записи и чтения из JSON"""
+
     def default(self, o):
         if isinstance(o, (Argument, Operation)):
             return o.__dict__
