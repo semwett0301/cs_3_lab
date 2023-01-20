@@ -4,18 +4,22 @@ import re
 
 
 def remove_comment(line: str) -> str:
+    """Удаление комментариев"""
     return re.sub(r';.*', '', line)
 
 
 def remove_extra_spaces(line: str) -> str:
+    """Удаление лишних пробелов"""
     return re.sub(r'\s+', ' ', line)
 
 
 def remove_commas(line: str) -> str:
+    """Удаление запятых"""
     return line.replace(',', ' ')
 
 
 def preprocessing(asm_text: str) -> str:
+    """Предобработка кода"""
     lines: list[str] = asm_text.splitlines()
 
     remove_comments = map(remove_comment, lines)

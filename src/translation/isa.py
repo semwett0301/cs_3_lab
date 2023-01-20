@@ -62,7 +62,7 @@ class AddrMode(str, Enum):
 class Argument:
     """Аргуемент операции"""
 
-    def __init__(self, mode: AddrMode, data: int | Register):
+    def __init__(self, mode: AddrMode, data: int | Register | str):
         self.data = data
         self.mode = mode
 
@@ -76,6 +76,7 @@ class Operation:
         self.args: list[Argument] = []
 
     def add_argument(self, arg: Argument):
+        """Функция добавления аргументов к команде (операции)"""
         self.args.append(arg)
 
 
@@ -89,12 +90,15 @@ class Encoder(json.JSONEncoder):
 
 
 def write_code(filename: str, code: list[Operation]) -> None:
+    """Функция кодирования и записи команд"""
     print(json.dumps(code, indent=4, cls=Encoder))
     with open(filename, "w", encoding="utf-8") as file:
         file.write(json.dumps(code, indent=4, cls=Encoder))
 
 
 def read_code(filename: str) -> object:
+    """Функция декодирования и чтения команд"""
+
     with open(filename, encoding="utf-8") as file:
         code = json.loads(file.read())  # type: ignore
 
