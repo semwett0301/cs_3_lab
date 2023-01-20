@@ -5,7 +5,6 @@ from enum import Enum
 from src.config import Register
 
 
-
 class Opcode(str, Enum):
     """Коды операций"""
 
