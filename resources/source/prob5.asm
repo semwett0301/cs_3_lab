@@ -1,6 +1,6 @@
 section .text
 .start:
-    XOR %r1, %r1
+    MOV %r1, 0
 
     LD %r2, #STDIN
 
@@ -23,10 +23,10 @@ section .text
             JMP .find_prime
 
     .find_number:
-        XOR %r1, %r1
+        MOV %r1, 0
         .next_number:
             ADD %r1, %r4
-            XOR %r3, %r3
+            MOV %r3, 0
         .next_divider:
             INC %r3
             CMP %r1, %r3

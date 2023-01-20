@@ -30,7 +30,7 @@
         ]
     },
     {
-        "opcode": "xor",
+        "opcode": "mov",
         "position": 3,
         "args": [
             {
@@ -38,8 +38,8 @@
                 "mode": "register"
             },
             {
-                "data": "r1",
-                "mode": "register"
+                "data": 0,
+                "mode": "data"
             }
         ]
     },
@@ -226,7 +226,7 @@
         ]
     },
     {
-        "opcode": "xor",
+        "opcode": "mov",
         "position": 19,
         "args": [
             {
@@ -234,8 +234,8 @@
                 "mode": "register"
             },
             {
-                "data": "r1",
-                "mode": "register"
+                "data": 0,
+                "mode": "data"
             }
         ]
     },
@@ -254,7 +254,7 @@
         ]
     },
     {
-        "opcode": "xor",
+        "opcode": "mov",
         "position": 21,
         "args": [
             {
@@ -262,8 +262,8 @@
                 "mode": "register"
             },
             {
-                "data": "r3",
-                "mode": "register"
+                "data": 0,
+                "mode": "data"
             }
         ]
     },

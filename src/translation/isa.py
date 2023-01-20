@@ -26,7 +26,6 @@ class Opcode(str, Enum):
     DEC = 'dec'
 
     MOV = 'mov'
-    XOR = 'xor'
 
     JMP = 'jmp'
     JE = 'je'
@@ -46,7 +45,7 @@ BranchOpcodes = (
 
 # Коды операций, которым разрешена работа с регистрами
 RegisterOpcodes = (
-    Opcode.ADD, Opcode.DEC, Opcode.INC, Opcode.DIV, Opcode.SUB, Opcode.MUL, Opcode.MOD, Opcode.MOV, Opcode.XOR,
+    Opcode.ADD, Opcode.DEC, Opcode.INC, Opcode.DIV, Opcode.SUB, Opcode.MUL, Opcode.MOD, Opcode.MOV,
     Opcode.CMP, Opcode.LD, Opcode.ST
 )
 

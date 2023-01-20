@@ -40,12 +40,8 @@ def resolve_variable(command: Operation, variables: dict[str, int]) -> Operation
     """Вставка значений переменных в команды"""
     if command.opcode in DataOpcodes:
         for arg in command.args:
-            if arg.mode in (AddrMode.ABS, AddrMode.REL) and isinstance(arg.data, str) and arg.data in variables:
-
-                if arg.mode == AddrMode.ABS:
-                    arg.data = variables[arg.data]
-                else:
-                    arg.data = variables[arg.data] - command.position - 1
+            if arg.mode is AddrMode.REL and isinstance(arg.data, str) and arg.data in variables:
+                arg.data = variables[arg.data] - command.position - 1
                 assert not isinstance(arg.data, str), 'You use undefined variable'
 
     return command
@@ -79,7 +75,7 @@ def join_text_and_data(text: list[Operation], data: list[Operation], is_text_fir
 def decode_register(operation: Operation, arg: str) -> Operation:
     """Вставка регистра в качестве аргумента"""
     assert Register(arg.lower()) is not None, 'Register not found'
-    assert operation.opcode in RegisterOpcodes, 'You cant use register in branch commands'
+    assert operation.opcode in RegisterOpcodes, 'You cant use register in not register commands'
     operation.add_argument(Argument(AddrMode.REG, Register(arg.lower())))
     return operation
 
@@ -100,12 +96,17 @@ def decode_label(operation: Operation, arg: str, labels: dict[str, int]) -> tupl
 def decode_absolute(operation: Operation, arg: str) -> Operation:
     """Вставка ячейки памяти с абсолютной адресацией в качестве аргумента"""
     assert operation.opcode in DataOpcodes, 'You cant access to memory not in ld and st command'
-    address: str | int = arg
+    address: int
 
     if arg == 'STDIN':
         address = 1
     elif arg == 'STDOUT':
         address = 2
+    else:
+        try:
+            address = int(arg)
+        except ValueError as addr_error:
+            raise ValueError("You must use int with absolute address mode") from addr_error
 
     operation.add_argument(Argument(AddrMode.ABS, address))
     return operation
@@ -123,6 +124,8 @@ def decode_relative(operation: Operation, arg: str) -> Operation:
 def decode_char(operation: Operation, arg: str) -> Operation:
     """Вставка символа в качестве аргумента"""
     assert arg.split("'") != 2, "You must write chars in single quotes"
+    assert operation.opcode in RegisterOpcodes or operation.opcode == Opcode.DATA, 'You cant use chars in not register commands'
+
     try:
         operation.add_argument(Argument(AddrMode.DATA, ord(arg[:-1])))
         return operation
@@ -132,6 +135,8 @@ def decode_char(operation: Operation, arg: str) -> Operation:
 
 def decode_int(operation: Operation, arg: str) -> Operation:
     """Вставка числа в качестве аргумента"""
+    assert operation.opcode in RegisterOpcodes or operation.opcode == Opcode.DATA, 'You cant use numbers in not register commands'
+
     try:
         value = int(arg)
         operation.add_argument(Argument(AddrMode.DATA, value))
@@ -169,6 +174,16 @@ def parse_data(data: str) -> list:
 
     return [result, variables]
 
+
+def check_address_or_variable_argument(operation: Operation, arg_num: int, mode: AddrMode):
+    if mode == AddrMode.ABS:
+        argument = 'address'
+    else:
+        argument = 'variable'
+
+    assert operation.opcode == Opcode.ST and arg_num == 0 or \
+           operation.opcode == Opcode.LD and arg_num == 1, \
+        'You must use' + argument + 'in ST only as first argument and in LD only as second argument'
 
 def resolve_labels(operations: list[Operation], labels: dict[str, int],
                    unresolved_labels: dict[str, list[tuple[int, int]]]) -> list[Operation]:
@@ -226,8 +241,10 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
                         unresolved_labels[label].append((addr_counter, arg_counter))
                 elif arg[0] == '#':
                     current_operation = decode_absolute(current_operation, arg[1:])
+                    check_address_or_variable_argument(current_operation, arg_counter, AddrMode.ABS)
                 elif arg[0] == '(':
                     current_operation = decode_relative(current_operation, arg[1:])
+                    check_address_or_variable_argument(current_operation, arg_counter, AddrMode.REL)
                 elif arg[0] == "'":
                     current_operation = decode_char(current_operation, arg[1:])
                 else:
