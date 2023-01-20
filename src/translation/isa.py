@@ -9,7 +9,6 @@ class Opcode(str, Enum):
     """Коды операций"""
 
     DATA = 'data'
-    NOP = 'nop'
     HLT = 'hlt'
 
     LD = 'ld'
@@ -21,11 +20,10 @@ class Opcode(str, Enum):
     MOD = 'mod'
     DIV = 'div'
     CMP = 'cmp'
+    MOV = 'mov'
 
     INC = 'inc'
     DEC = 'dec'
-
-    MOV = 'mov'
 
     JMP = 'jmp'
     JE = 'je'
@@ -33,21 +31,72 @@ class Opcode(str, Enum):
     JG = 'jg'
 
 
-# Коды операций, которым разрешен доступ к памяти
-DataOpcodes = (
-    Opcode.LD, Opcode.ST
-)
+class AmountOperandType(int, Enum):
+    """Количество операндов, которые должны бытьу команды"""
+    TWO = 2,
+    ONE = 1,
+    NONE = 0
 
-# Коды операций, которым разрешена адресация по лейблам
-BranchOpcodes = (
-    Opcode.JG, Opcode.JMP, Opcode.JE, Opcode.JNE
-)
 
-# Коды операций, которым разрешена работа с регистрами
-RegisterOpcodes = (
-    Opcode.ADD, Opcode.DEC, Opcode.INC, Opcode.DIV, Opcode.SUB, Opcode.MUL, Opcode.MOD, Opcode.MOV,
-    Opcode.CMP, Opcode.LD, Opcode.ST
-)
+class OperationType(str, Enum):
+    """Вид операции"""
+    MEM = 'mem',
+    BRANCH = 'branch',
+    REGISTER = 'register'
+
+
+class OperationRestriction:
+    """Все ограничения конкретной операции"""
+
+    def __init__(self, amount: AmountOperandType):
+        self.amount = amount
+        self.types: list[OperationType] = []
+
+    def add_operation_type(self, *operation_types: OperationType) -> object:
+        for current_type in operation_types:
+            self.types.append(current_type)
+        return self
+
+
+# Конфигурация ограничений операций
+no_op_restriction = OperationRestriction(AmountOperandType.NONE)
+
+branch_op_restriction = OperationRestriction(AmountOperandType.ONE)
+branch_op_restriction.add_operation_type(OperationType.BRANCH)
+
+inc_dec_op_restriction = OperationRestriction(AmountOperandType.ONE)
+inc_dec_op_restriction.add_operation_type(OperationType.REGISTER)
+
+data_op_restriction = OperationRestriction(AmountOperandType.TWO)
+data_op_restriction.add_operation_type(OperationType.REGISTER, OperationType.MEM)
+
+reg_op_restriction = OperationRestriction(AmountOperandType.TWO)
+reg_op_restriction.add_operation_type(OperationType.REGISTER)
+
+# Сбор ограничений для каждой операции
+OperationRestrictionConfig: dict[Opcode, OperationRestriction] = {
+    Opcode.DATA: no_op_restriction,
+    Opcode.HLT: no_op_restriction,
+
+    Opcode.JMP: branch_op_restriction,
+    Opcode.JE: branch_op_restriction,
+    Opcode.JNE: branch_op_restriction,
+    Opcode.JG: branch_op_restriction,
+
+    Opcode.INC: inc_dec_op_restriction,
+    Opcode.DEC: inc_dec_op_restriction,
+
+    Opcode.LD: data_op_restriction,
+    Opcode.ST: data_op_restriction,
+
+    Opcode.ADD: reg_op_restriction,
+    Opcode.SUB: reg_op_restriction,
+    Opcode.MOV: reg_op_restriction,
+    Opcode.MOD: reg_op_restriction,
+    Opcode.DIV: reg_op_restriction,
+    Opcode.MUL: reg_op_restriction,
+    Opcode.CMP: reg_op_restriction,
+}
 
 
 class AddrMode(str, Enum):
@@ -77,6 +126,9 @@ class Operation:
     def add_argument(self, arg: Argument):
         """Функция добавления аргументов к команде (операции)"""
         self.args.append(arg)
+
+    def is_corr_to_type(self, operation_type: OperationType) -> bool:
+        return operation_type in OperationRestrictionConfig[self.opcode].types
 
 
 class Encoder(json.JSONEncoder):

@@ -3,48 +3,46 @@ import re
 import sys
 
 from src.config import Register
-from src.translation.isa import Opcode, Operation, Argument, AddrMode, DataOpcodes, BranchOpcodes, RegisterOpcodes, \
-    write_code
+from src.translation.isa import Opcode, Operation, Argument, AddrMode, \
+    write_code, OperationRestrictionConfig, AmountOperandType, OperationType
 from src.translation.preprocessor import preprocessing
 
 
-def add_start_address(commands: list[Operation], start_address: int):
+def add_start_address(operations: list[Operation], start_address: int):
     """Переход на .start в начале программы"""
-    result = commands.copy()
-
-    for command in result:
+    for command in operations:
         command.position += 1
 
     jmp_start_addr = Operation(Opcode.JMP, 0)
     jmp_start_addr.add_argument(Argument(AddrMode.REL, start_address))
 
-    result.insert(0, jmp_start_addr)
-    return result
+    operations.insert(0, jmp_start_addr)
+    return operations
 
 
-def add_io_variables(commands: list[Operation]) -> tuple[list[Operation], int]:
+def add_io_variables(operations: list[Operation]) -> tuple[list[Operation], int]:
     """Добавление ячеек под ввод и вывод"""
-    for command in commands:
+    for command in operations:
         command.position += 2
 
-    commands.insert(0, Operation(Opcode.DATA, 1))
-    commands[0].add_argument(Argument(AddrMode.DATA, 0))
+    operations.insert(0, Operation(Opcode.DATA, 1))
+    operations[0].add_argument(Argument(AddrMode.DATA, 0))
 
-    commands.insert(0, Operation(Opcode.DATA, 0))
-    commands[0].add_argument(Argument(AddrMode.DATA, 0))
+    operations.insert(0, Operation(Opcode.DATA, 0))
+    operations[0].add_argument(Argument(AddrMode.DATA, 0))
 
-    return commands, 2
+    return operations, 2
 
 
-def resolve_variable(command: Operation, variables: dict[str, int]) -> Operation:
+def resolve_variable(operation: Operation, variables: dict[str, int]) -> Operation:
     """Вставка значений переменных в команды"""
-    if command.opcode in DataOpcodes:
-        for arg in command.args:
+    if operation.is_corr_to_type(OperationType.MEM):
+        for arg in operation.args:
             if arg.mode is AddrMode.REL and isinstance(arg.data, str) and arg.data in variables:
-                arg.data = variables[arg.data] - command.position - 1
+                arg.data = variables[arg.data] - operation.position - 1
                 assert not isinstance(arg.data, str), 'You use undefined variable'
 
-    return command
+    return operation
 
 
 def join_text_and_data(text: list[Operation], data: list[Operation], is_text_first: bool, variables: dict[str, int]) -> \
@@ -75,14 +73,14 @@ def join_text_and_data(text: list[Operation], data: list[Operation], is_text_fir
 def decode_register(operation: Operation, arg: str) -> Operation:
     """Вставка регистра в качестве аргумента"""
     assert Register(arg.lower()) is not None, 'Register not found'
-    assert operation.opcode in RegisterOpcodes, 'You cant use register in not register commands'
+    assert operation.is_corr_to_type(OperationType.REGISTER), 'You cant use register in not register commands'
     operation.add_argument(Argument(AddrMode.REG, Register(arg.lower())))
     return operation
 
 
 def decode_label(operation: Operation, arg: str, labels: dict[str, int]) -> tuple[Operation, str | int]:
     """Вставка лейбла (его адреса) в качестве аргумента"""
-    assert operation.opcode in BranchOpcodes != -1, 'You cant use labels not in branch command'
+    assert operation.is_corr_to_type(OperationType.BRANCH), 'You cant use labels not in branch command'
 
     if arg in labels:
         addr: int | str = labels[arg] - operation.position - 1
@@ -95,7 +93,7 @@ def decode_label(operation: Operation, arg: str, labels: dict[str, int]) -> tupl
 
 def decode_absolute(operation: Operation, arg: str) -> Operation:
     """Вставка ячейки памяти с абсолютной адресацией в качестве аргумента"""
-    assert operation.opcode in DataOpcodes, 'You cant access to memory not in ld and st command'
+    assert operation.is_corr_to_type(OperationType.MEM), 'You cant access to memory not in ld and st command'
     address: int
 
     if arg == 'STDIN':
@@ -114,7 +112,7 @@ def decode_absolute(operation: Operation, arg: str) -> Operation:
 
 def decode_relative(operation: Operation, arg: str) -> Operation:
     """Вставка ячейки памяти с относительной адресацией в качестве аргумента"""
-    assert operation.opcode in DataOpcodes, 'You cant access to memory not in ld and st command'
+    assert operation.is_corr_to_type(OperationType.MEM), 'You cant access to memory not in ld and st command'
     assert arg.find(')') == len(arg) - 1, 'You must use ) after variable'
     operation.add_argument(Argument(AddrMode.REL, arg[:-1]))
 
@@ -124,7 +122,8 @@ def decode_relative(operation: Operation, arg: str) -> Operation:
 def decode_char(operation: Operation, arg: str) -> Operation:
     """Вставка символа в качестве аргумента"""
     assert arg.split("'") != 2, "You must write chars in single quotes"
-    assert operation.opcode in RegisterOpcodes or operation.opcode == Opcode.DATA, 'You cant use chars in not register commands'
+    assert operation.is_corr_to_type(
+        OperationType.REGISTER) or operation.opcode == Opcode.DATA, 'You cant use chars in not register commands'
 
     try:
         operation.add_argument(Argument(AddrMode.DATA, ord(arg[:-1])))
@@ -135,7 +134,8 @@ def decode_char(operation: Operation, arg: str) -> Operation:
 
 def decode_int(operation: Operation, arg: str) -> Operation:
     """Вставка числа в качестве аргумента"""
-    assert operation.opcode in RegisterOpcodes or operation.opcode == Opcode.DATA, 'You cant use numbers in not register commands'
+    assert operation.is_corr_to_type(
+        OperationType.REGISTER) or operation.opcode == Opcode.DATA, 'You cant use numbers in not register commands'
 
     try:
         value = int(arg)
@@ -175,15 +175,35 @@ def parse_data(data: str) -> list:
     return [result, variables]
 
 
-def check_address_or_variable_argument(operation: Operation, arg_num: int, mode: AddrMode):
-    """Проверяет корректность переданных аргументов в LD и ST"""
-    if mode == AddrMode.ABS:
-        argument = 'address'
-    else:
-        argument = 'variable'
+def check_correct_amount_of_operands(operation: Operation):
+    """Проверяет, корректное ли количество операндов в операции использовано"""
+    if operation.opcode in OperationRestrictionConfig:
+        amount: AmountOperandType = OperationRestrictionConfig[operation.opcode].amount
+        assert amount.value == len(operation.args), 'You are using an operation with an incorrect number of operands'
 
-    assert operation.opcode == Opcode.ST and arg_num == 0 or \
-           operation.opcode == Opcode.LD and arg_num == 1, 'You must use' + argument + 'in ST only as first argument and in LD only as second argument'
+
+def check_operand_constraints(operation: Operation, arg: str, arg_num: int):
+    """Проверяет ограничения, наложенные отдельно на команды"""
+    if operation.opcode in (Opcode.INC, Opcode.DEC):
+        assert Register(arg[1:].lower()) is not None and arg_num == 0, \
+            "You must use INC and DEC only with one argument and only with register"
+
+    if operation.opcode == Opcode.LD:
+        if arg_num == 0:
+            assert Register(arg[1:].lower()) is not None, \
+                "You must use register as the 1st argument in LD"
+        else:
+            assert arg[0] in ('#', '('), "You must use address or variable as the 2nd argument in LD"
+
+    if operation.opcode == Opcode.ST:
+        if arg_num == 1:
+            assert Register(arg[1:].lower()) is not None, \
+                "You must use register as the 2nd argument in LD"
+        else:
+            assert arg[0] in ('#', '('), "You must use address or variable as the 1st argument in LD"
+
+    if OperationType.BRANCH in OperationRestrictionConfig[operation.opcode].types:
+        assert arg_num == 0 and arg[0] == '.', 'You must use branch commands only with 1 argument and only with labels'
 
 
 def resolve_labels(operations: list[Operation], labels: dict[str, int],
@@ -200,7 +220,7 @@ def resolve_labels(operations: list[Operation], labels: dict[str, int],
 
 
 def parse_text(text: str) -> tuple[list[Operation], int]:
-    """Превращение секции text в структуру"""
+    """Превращение секцию text в структуру"""
     assert (text.find('.start:') != -1), 'Must have .start'
 
     labels: dict[str, int] = {}
@@ -229,9 +249,9 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
             assert Opcode(decoding[0].lower()) is not None, 'There is no such command'
 
             current_operation = Operation(Opcode(decoding[0].lower()), addr_counter)
-            print(current_operation)
             arg_counter = 0
             for arg in decoding[1:]:
+                check_operand_constraints(current_operation, arg, arg_counter)
                 if arg[0] == '%':
                     current_operation = decode_register(current_operation, arg[1:])
                 elif arg[0] == '.':
@@ -242,16 +262,16 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
                         unresolved_labels[label].append((addr_counter, arg_counter))
                 elif arg[0] == '#':
                     current_operation = decode_absolute(current_operation, arg[1:])
-                    check_address_or_variable_argument(current_operation, arg_counter, AddrMode.ABS)
                 elif arg[0] == '(':
                     current_operation = decode_relative(current_operation, arg[1:])
-                    check_address_or_variable_argument(current_operation, arg_counter, AddrMode.REL)
                 elif arg[0] == "'":
                     current_operation = decode_char(current_operation, arg[1:])
                 else:
                     current_operation = decode_int(current_operation, arg)
 
                 arg_counter += 1
+
+            check_correct_amount_of_operands(current_operation)
             result.append(current_operation)
             addr_counter += 1
 
