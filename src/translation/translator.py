@@ -183,8 +183,7 @@ def check_address_or_variable_argument(operation: Operation, arg_num: int, mode:
         argument = 'variable'
 
     assert operation.opcode == Opcode.ST and arg_num == 0 or \
-           operation.opcode == Opcode.LD and arg_num == 1, \
-        'You must use' + argument + 'in ST only as first argument and in LD only as second argument'
+           operation.opcode == Opcode.LD and arg_num == 1, 'You must use' + argument + 'in ST only as first argument and in LD only as second argument'
 
 
 def resolve_labels(operations: list[Operation], labels: dict[str, int],
