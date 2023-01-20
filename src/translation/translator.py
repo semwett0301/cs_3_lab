@@ -123,15 +123,15 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
         decoding = instr.split(' ')
 
         if decoding[0][0] == '.':
-            label = decoding[0]
+            current_label = decoding[0]
 
             assert len(decoding) == 1, 'Label should be located on a separate line '
-            assert label[-1] == ':' and label.find(':'), 'Label should be and with : and contain only 1'
+            assert current_label[-1] == ':' and current_label.find(':'), 'Label should be and with : and contain only 1'
 
-            label = decoding[0][1:-1]
-            if label == 'start':
+            current_label = decoding[0][1:-1]
+            if current_label == 'start':
                 start_addr = addr_counter
-            labels[label] = addr_counter
+            labels[current_label] = addr_counter
         else:
             assert Opcode(decoding[0].lower()) is not None, 'There is no such command'
 
@@ -150,10 +150,10 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
                     if arg[1:] in labels.keys():
                         addr = labels[arg[1:]] - addr_counter - 1
                     else:
-                        label = arg[1:]
-                        if label not in unresolved_labels.keys():
-                            unresolved_labels[label] = []
-                        unresolved_labels[label].append([addr_counter, arg_counter])
+                        current_label = arg[1:]
+                        if current_label not in unresolved_labels.keys():
+                            unresolved_labels[current_label] = []
+                        unresolved_labels[current_label].append([addr_counter, arg_counter])
 
                     current_command.add_argument(Argument(AddrMode.REL, addr))
                 elif arg[0] == '#':
@@ -189,11 +189,11 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
 
             addr_counter += 1
 
-    for label in unresolved_labels.items():
-        for command_position, argument_number in label:
-            command = result[command_position - 1]
+    for label_name, params in unresolved_labels:
+        for operation_position, argument_number in params:
+            command = result[operation_position - 1]
 
-            command.args[argument_number].data = label - command.position - 1
+            command.args[argument_number].data = labels[label_name] - command.position - 1
 
     return result, start_addr
 
