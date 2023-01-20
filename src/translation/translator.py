@@ -8,68 +8,6 @@ from src.translation.isa import Opcode, Operation, Argument, AddrMode, \
 from src.translation.preprocessor import preprocessing
 
 
-def add_start_address(operations: list[Operation], start_address: int):
-    """Переход на .start в начале программы"""
-    for command in operations:
-        command.position += 1
-
-    jmp_start_addr = Operation(Opcode.JMP, 0)
-    jmp_start_addr.add_argument(Argument(AddrMode.REL, start_address))
-
-    operations.insert(0, jmp_start_addr)
-    return operations
-
-
-def add_io_variables(operations: list[Operation]) -> tuple[list[Operation], int]:
-    """Добавление ячеек под ввод и вывод"""
-    for command in operations:
-        command.position += 2
-
-    operations.insert(0, Operation(Opcode.DATA, 1))
-    operations[0].add_argument(Argument(AddrMode.DATA, 0))
-
-    operations.insert(0, Operation(Opcode.DATA, 0))
-    operations[0].add_argument(Argument(AddrMode.DATA, 0))
-
-    return operations, 2
-
-
-def resolve_variable(operation: Operation, variables: dict[str, int]) -> Operation:
-    """Вставка значений переменных в команды"""
-    if operation.is_corr_to_type(OperationType.MEM):
-        for arg in operation.args:
-            if arg.mode is AddrMode.REL and isinstance(arg.data, str) and arg.data in variables:
-                arg.data = variables[arg.data] - operation.position - 1
-                assert not isinstance(arg.data, str), 'You use undefined variable'
-
-    return operation
-
-
-def join_text_and_data(text: list[Operation], data: list[Operation], is_text_first: bool, variables: dict[str, int]) -> \
-        tuple[list[Operation], int]:
-    """Соединение секций text и data"""
-    offset: int = 0
-
-    if is_text_first:
-        for command in data:
-            command.position += len(text)
-
-        for name in variables.keys():
-            variables[name] += len(text)
-
-        result = text + data
-    else:
-        for command in text:
-            command.position += len(data)
-        result = data + text
-        offset = len(data)
-
-    for command in result:
-        resolve_variable(command, variables)
-
-    return result, offset
-
-
 def decode_register(operation: Operation, arg: str) -> Operation:
     """Вставка регистра в качестве аргумента"""
     assert Register(arg.lower()) is not None, 'Register not found'
@@ -145,45 +83,15 @@ def decode_int(operation: Operation, arg: str) -> Operation:
         raise ValueError("You must write chars in single quotes") from char_error
 
 
-def parse_data(data: str) -> list:
-    """Превращение секции data в структуру"""
-    result = []
-    variables: dict[str, int] = {}
-    addr_counter = 0
-
-    for line in data.split('\n'):
-        current_operation = Operation(Opcode.DATA, addr_counter)
-
-        var_description = line.split(':')
-        assert len(var_description) == 2, 'You must write : only after name of variable'
-
-        name, value = var_description[0], re.sub(r'\s+', '', var_description[1])
-        assert name[0][-1] != ' ', 'You must write : only after variable name'
-        assert name not in variables, 'Redefining a variable'
-
-        if value[0] == "'":
-            current_operation = decode_char(current_operation, value[1:])
-        else:
-            current_operation = decode_int(current_operation, value)
-
-        variables[name] = addr_counter
-
-        result.append(current_operation)
-
-        addr_counter += 1
-
-    return [result, variables]
-
-
 def check_correct_amount_of_operands(operation: Operation):
     """Проверяет, корректное ли количество операндов в операции использовано"""
     if operation.opcode in OperationRestrictionConfig:
-        amount: AmountOperandType = OperationRestrictionConfig[operation.opcode].amount
-        assert amount.value == len(operation.args), 'You are using an operation with an incorrect number of operands'
+        assert OperationRestrictionConfig[operation.opcode].amount.value == len(
+            operation.args), 'You are using an operation with an incorrect number of operands'
 
 
 def check_operand_constraints(operation: Operation, arg: str, arg_num: int):
-    """Проверяет ограничения, наложенные отдельно на команды"""
+    """Проверяет ограничения, наложенные на отдельные команды"""
     if operation.opcode in (Opcode.INC, Opcode.DEC):
         assert Register(arg[1:].lower()) is not None and arg_num == 0, \
             "You must use INC and DEC only with one argument and only with register"
@@ -219,6 +127,98 @@ def resolve_labels(operations: list[Operation], labels: dict[str, int],
     return operations
 
 
+def add_start_address(operations: list[Operation], start_address: int):
+    """Переход на .start в начале программы"""
+    for command in operations:
+        command.position += 1
+
+    jmp_start_addr = Operation(Opcode.JMP, 0)
+    jmp_start_addr.add_argument(Argument(AddrMode.REL, start_address))
+
+    operations.insert(0, jmp_start_addr)
+    return operations
+
+
+def add_io_variables(operations: list[Operation]) -> tuple[list[Operation], int]:
+    """Добавление ячеек под ввод и вывод"""
+    for command in operations:
+        command.position += 2
+
+    operations.insert(0, Operation(Opcode.DATA, 1))
+    operations[0].add_argument(Argument(AddrMode.DATA, 0))
+
+    operations.insert(0, Operation(Opcode.DATA, 0))
+    operations[0].add_argument(Argument(AddrMode.DATA, 0))
+
+    return operations, 2
+
+
+def resolve_variable(operation: Operation, variables: dict[str, int]) -> Operation:
+    """Вставка значений переменных в команды"""
+    if operation.is_corr_to_type(OperationType.MEM):
+        for arg in operation.args:
+            if arg.mode is AddrMode.REL and isinstance(arg.data, str) and arg.data in variables:
+                arg.data = variables[arg.data] - operation.position - 1
+                assert not isinstance(arg.data, str), 'You use undefined variable'
+
+    return operation
+
+
+def join_text_and_data(text: list[Operation], data: list[Operation], is_text_first: bool, variables: dict[str, int]) -> \
+        tuple[list[Operation], int]:
+    """Соединение секций text и data"""
+    offset: int = 0
+
+    if is_text_first:
+        for command in data:
+            command.position += len(text)
+
+        for name in variables.keys():
+            variables[name] += len(text)
+
+        result = text + data
+    else:
+        for command in text:
+            command.position += len(data)
+        result = data + text
+        offset = len(data)
+
+    for command in result:
+        resolve_variable(command, variables)
+
+    return result, offset
+
+
+def parse_data(data: str) -> list:
+    """Превращение секции data в структуру"""
+    result = []
+    variables: dict[str, int] = {}
+    addr_counter = 0
+
+    for line in data.split('\n'):
+        current_operation = Operation(Opcode.DATA, addr_counter)
+
+        var_description = line.split(':')
+        assert len(var_description) == 2, 'You must write : only after name of variable'
+
+        name, value = var_description[0], re.sub(r'\s+', '', var_description[1])
+        assert name[0][-1] != ' ', 'You must write : only after variable name'
+        assert name not in variables, 'Redefining a variable'
+
+        if value[0] == "'":
+            current_operation = decode_char(current_operation, value[1:])
+        else:
+            current_operation = decode_int(current_operation, value)
+
+        variables[name] = addr_counter
+
+        result.append(current_operation)
+
+        addr_counter += 1
+
+    return [result, variables]
+
+
 def parse_text(text: str) -> tuple[list[Operation], int]:
     """Превращение секцию text в структуру"""
     assert (text.find('.start:') != -1), 'Must have .start'
@@ -235,7 +235,8 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
 
         decoding = instr.split(' ')
 
-        if decoding[0][0] == '.':
+
+        if decoding[0][0] == '.': # Запись нового лейбла
             current_label = decoding[0]
 
             assert len(decoding) == 1, 'Label should be located on a separate line '
@@ -245,13 +246,15 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
             if current_label == 'start':
                 start_addr = addr_counter
             labels[current_label] = addr_counter
-        else:
+        else: # Декодирование операнда
             assert Opcode(decoding[0].lower()) is not None, 'There is no such command'
 
             current_operation = Operation(Opcode(decoding[0].lower()), addr_counter)
             arg_counter = 0
             for arg in decoding[1:]:
+                # Проверка ограничений конкретных команд
                 check_operand_constraints(current_operation, arg, arg_counter)
+
                 if arg[0] == '%':
                     current_operation = decode_register(current_operation, arg[1:])
                 elif arg[0] == '.':
@@ -271,6 +274,7 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
 
                 arg_counter += 1
 
+            # Проверка корректности команды и ее сохранение
             check_correct_amount_of_operands(current_operation)
             result.append(current_operation)
             addr_counter += 1
