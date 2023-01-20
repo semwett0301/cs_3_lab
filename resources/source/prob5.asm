@@ -38,5 +38,4 @@ section .text
             JMP .next_divider
     .exit:
         ST #STDOUT, %r1
-        ST #STDOUT, '\n'
         HLT

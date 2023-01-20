@@ -152,7 +152,7 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
                         current_label = arg[1:]
                         if current_label not in unresolved_labels.keys():
                             unresolved_labels[current_label] = []
-                        unresolved_labels[current_label].append([addr_counter, arg_counter])
+                        unresolved_labels[current_label].append((addr_counter, arg_counter))
 
                     current_command.add_argument(Argument(AddrMode.REL, addr))
                 elif arg[0] == '#':
@@ -174,13 +174,16 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
                     current_command.add_argument(Argument(AddrMode.REL, arg[1:-1]))
                 elif arg[0] == "'":
                     assert arg.split("'") != 3, "You must write chars in single quotes"
-                    current_command.add_argument(Argument(AddrMode.DATA, arg[1:-1]))
+                    try:
+                        current_command.add_argument(Argument(AddrMode.DATA, ord(arg[1:-1])))
+                    except ValueError as e:
+                        raise ValueError("You can't write a string as an argument, only a char") from e
                 else:
                     try:
                         value = int(arg)
                         current_command.add_argument(Argument(AddrMode.DATA, value))
-                    except ValueError:
-                        raise ValueError("You must write chars in single quotes")
+                    except ValueError as e:
+                        raise ValueError("You must write chars in single quotes") from e
 
                 arg_counter += 1
 

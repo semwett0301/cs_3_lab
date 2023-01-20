@@ -52,7 +52,7 @@
                 "mode": "register"
             },
             {
-                "data": "0x0",
+                "data": 0,
                 "mode": "data"
             }
         ]

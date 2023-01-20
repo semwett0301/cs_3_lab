@@ -6,7 +6,7 @@ section .text
 .start:
     .print_char:
         LD %r1, (H)
-        CMP %r1,'0x0'
+        CMP %r1, 0
         JE .exit ; ndjz vfnm ik.[; ffd
         ST #STDOUT, %r1
         INC %r1

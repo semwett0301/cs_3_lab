@@ -350,22 +350,8 @@
         ]
     },
     {
-        "opcode": "st",
-        "position": 30,
-        "args": [
-            {
-                "data": 2,
-                "mode": "absolute"
-            },
-            {
-                "data": "\\n",
-                "mode": "data"
-            }
-        ]
-    },
-    {
         "opcode": "hlt",
-        "position": 31,
+        "position": 30,
         "args": []
     }
 ]
