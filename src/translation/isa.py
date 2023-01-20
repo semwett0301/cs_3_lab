@@ -5,7 +5,6 @@ from src.config import Register
 import json
 
 
-
 class Opcode(str, Enum):
     """Коды операций"""
 
