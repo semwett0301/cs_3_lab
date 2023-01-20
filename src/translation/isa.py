@@ -33,15 +33,15 @@ class Opcode(str, Enum):
 
 class AmountOperandType(int, Enum):
     """Количество операндов, которые должны бытьу команды"""
-    TWO = 2,
-    ONE = 1,
+    TWO = 2
+    ONE = 1
     NONE = 0
 
 
 class OperationType(str, Enum):
     """Вид операции"""
-    MEM = 'mem',
-    BRANCH = 'branch',
+    MEM = 'mem'
+    BRANCH = 'branch'
     REGISTER = 'register'
 
 
@@ -52,10 +52,10 @@ class OperationRestriction:
         self.amount = amount
         self.types: list[OperationType] = []
 
-    def add_operation_type(self, *operation_types: OperationType) -> object:
+    def add_operation_type(self, *operation_types: OperationType):
+        """Добавляет тип операции к ограничениям"""
         for current_type in operation_types:
             self.types.append(current_type)
-        return self
 
 
 # Конфигурация ограничений операций
@@ -128,6 +128,7 @@ class Operation:
         self.args.append(arg)
 
     def is_corr_to_type(self, operation_type: OperationType) -> bool:
+        """Проверяет поддерживает ли операция тот или иной тип"""
         return operation_type in OperationRestrictionConfig[self.opcode].types
 
 
