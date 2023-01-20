@@ -189,7 +189,7 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
 
             addr_counter += 1
 
-    for label_name, params in unresolved_labels:
+    for label_name, params in unresolved_labels.items():
         for operation_position, argument_number in params:
             command = result[operation_position - 1]
 
