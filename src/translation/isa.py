@@ -62,7 +62,7 @@ class AddrMode(str, Enum):
 class Argument:
     """Аргуемент операции"""
 
-    def __init__(self, mode: AddrMode, data: int | Register | str):
+    def __init__(self, mode: AddrMode, data: int | Register):
         self.data = data
         self.mode = mode
 

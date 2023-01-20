@@ -91,13 +91,13 @@ def parse_data(data: str) -> list:
             assert value.find("'") == len(value) - 1, "You should close char with single quot"
             try:
                 current_command.add_argument(Argument(AddrMode.DATA, ord(value[:-1])))
-            except ValueError as e:
-                raise ValueError("You can't write a string as an argument, only a char") from e
+            except ValueError as char_error:
+                raise ValueError("You can't write a string as an argument, only a char") from char_error
         else:
             try:
                 current_command.add_argument(Argument(AddrMode.DATA, int(value)))
-            except ValueError as e:
-                raise ValueError("You must write chars in single quotes") from e
+            except ValueError as char_error:
+                raise ValueError("You must write chars in single quotes") from char_error
 
         variables[name] = addr_counter
 
@@ -178,14 +178,14 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
                     assert arg.split("'") != 3, "You must write chars in single quotes"
                     try:
                         current_command.add_argument(Argument(AddrMode.DATA, ord(arg[1:-1])))
-                    except ValueError as e:
-                        raise ValueError("You can't write a string as an argument, only a char") from e
+                    except ValueError as char_error:
+                        raise ValueError("You can't write a string as an argument, only a char") from char_error
                 else:
                     try:
                         value = int(arg)
                         current_command.add_argument(Argument(AddrMode.DATA, value))
-                    except ValueError as e:
-                        raise ValueError("You must write chars in single quotes") from e
+                    except ValueError as char_error:
+                        raise ValueError("You must write chars in single quotes") from char_error
 
                 arg_counter += 1
 
