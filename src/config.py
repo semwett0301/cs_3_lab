@@ -1,7 +1,10 @@
+"""Конфигурация работы CU и DataPath"""
+
 from enum import Enum
 
 
 class Register(str, Enum):
+    """Список поддерживаемых регистров"""
     R1 = 'r1'
     R2 = 'r2'
     R3 = 'r3'

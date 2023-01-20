@@ -1,3 +1,5 @@
+"""Модуль транслятора"""
+
 import sys
 
 from src.config import Register

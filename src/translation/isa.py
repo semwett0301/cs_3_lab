@@ -1,3 +1,5 @@
+"""Модуль описания системы команд"""
+
 import json
 from enum import Enum
 from src.config import Register
@@ -55,6 +57,7 @@ class AddrMode(str, Enum):
 
 
 class Argument:
+    """Аргуемент операции"""
     def __init__(self, mode: AddrMode, data: int | Register | str):
         self.data = data
         self.mode = mode
@@ -73,6 +76,7 @@ class Operation:
 
 
 class Encoder(json.JSONEncoder):
+    """Класс-энкодер для записи и чтения из JSON"""
     def default(self, o):
         if isinstance(o, (Argument, Operation)):
             return o.__dict__
