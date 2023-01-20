@@ -280,6 +280,7 @@ def translate(source: str) -> list[Operation]:
 
 
 def main(args):
+    """Главная функция модуля"""
     assert len(args) == 2, \
         "Wrong arguments: translation.py <asm_file> <target>"
     source = args[0]
