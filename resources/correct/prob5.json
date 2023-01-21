@@ -190,6 +190,10 @@
                 "mode": "register"
             },
             {
+                "data": "r4",
+                "mode": "register"
+            },
+            {
                 "data": "r1",
                 "mode": "register"
             }
@@ -223,6 +227,10 @@
         "opcode": "add",
         "position": 18,
         "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
             {
                 "data": "r1",
                 "mode": "register"

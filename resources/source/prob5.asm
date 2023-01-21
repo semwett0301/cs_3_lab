@@ -19,13 +19,13 @@ section .text
             JE .mul_step
             JMP .check_mod
         .mul_step:
-            MUL %r4, %r1
+            MUL %r4, %r4, %r1
             JMP .find_prime
 
     .find_number:
         MOV %r1, 0
         .next_number:
-            ADD %r1, %r4
+            ADD %r1, %r1, %r4
             MOV %r3, 0
         .next_divider:
             INC %r3

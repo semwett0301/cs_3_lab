@@ -33,6 +33,7 @@ class Opcode(str, Enum):
 
 class AmountOperandType(int, Enum):
     """Количество операндов, которые должны бытьу команды"""
+    THREE = 3
     TWO = 2
     ONE = 1
     NONE = 0
@@ -70,10 +71,11 @@ inc_dec_op_restriction.add_operation_type(OperationType.REGISTER)
 data_op_restriction = OperationRestriction(AmountOperandType.TWO)
 data_op_restriction.add_operation_type(OperationType.REGISTER, OperationType.MEM)
 
-reg_op_restriction = OperationRestriction(AmountOperandType.TWO)
-reg_op_restriction.add_operation_type(OperationType.REGISTER)
+three_operand_reg_op_restriction = OperationRestriction(AmountOperandType.THREE)
+three_operand_reg_op_restriction.add_operation_type(OperationType.REGISTER)
 
-# Сбор ограничений для каждой операции
+two_operand_reg_op_restriction = OperationRestriction(AmountOperandType.TWO)
+two_operand_reg_op_restriction.add_operation_type(OperationType.REGISTER)
 operation_restriction_config: dict[Opcode, OperationRestriction] = {
     Opcode.DATA: no_op_restriction,
     Opcode.HLT: no_op_restriction,
@@ -89,14 +91,16 @@ operation_restriction_config: dict[Opcode, OperationRestriction] = {
     Opcode.LD: data_op_restriction,
     Opcode.ST: data_op_restriction,
 
-    Opcode.ADD: reg_op_restriction,
-    Opcode.SUB: reg_op_restriction,
-    Opcode.MOV: reg_op_restriction,
-    Opcode.MOD: reg_op_restriction,
-    Opcode.DIV: reg_op_restriction,
-    Opcode.MUL: reg_op_restriction,
-    Opcode.CMP: reg_op_restriction,
+    Opcode.ADD: three_operand_reg_op_restriction,
+    Opcode.SUB: three_operand_reg_op_restriction,
+    Opcode.MOV: two_operand_reg_op_restriction,
+    Opcode.MOD: three_operand_reg_op_restriction,
+    Opcode.DIV: three_operand_reg_op_restriction,
+    Opcode.MUL: three_operand_reg_op_restriction,
+    Opcode.CMP: two_operand_reg_op_restriction,
 }
+
+# Сбор ограничений для каждой операции
 
 # Исключения в общих ограничениях
 operation_general_rules_exceptions: dict[Opcode, list[OperationType]] = {

@@ -103,7 +103,9 @@ def check_operation_type(operation: Operation):
                     restriction_types.remove(exception)
 
         if OperationType.REGISTER in restriction_types:
-            assert operation.args[0].mode == AddrMode.REG, 'You should use register as the first argument in register commands'
+            for arg_num in range(0, len(operation.args) - 1, 1):
+                assert operation.args[
+                           arg_num].mode == AddrMode.REG, 'You should use register as the first n-1 (or only the first, if you have 1 operand) argument in register commands'
 
         if OperationType.MEM in restriction_types:
             assert AddrMode.REG in argument_types, 'You should use at least one register in the memory commands'
