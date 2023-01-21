@@ -2,7 +2,7 @@
 import json
 
 from enum import Enum
-from src.config import Register
+from src.machine.config import Register
 
 
 class Opcode(str, Enum):

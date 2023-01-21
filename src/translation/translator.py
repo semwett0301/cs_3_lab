@@ -2,9 +2,9 @@
 import re
 import sys
 
-from src.config import Register
+from src.machine.config import Register
 from src.translation.isa import Opcode, Operation, Argument, AddrMode, \
-    write_code, OperationRestrictionConfig, AmountOperandType, OperationType
+    write_code, OperationRestrictionConfig, OperationType
 from src.translation.preprocessor import preprocessing
 
 
