@@ -4,7 +4,7 @@ import sys
 
 from src.machine.config import Register
 from src.translation.isa import Opcode, Operation, Argument, AddrMode, \
-    write_code, operation_restriction_config, OperationType, OperationRestriction, operation_general_rules_exceptions
+    write_code, operation_restriction_config, OperationType, operation_general_rules_exceptions
 from src.translation.preprocessor import preprocessing
 
 
