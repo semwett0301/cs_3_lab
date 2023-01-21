@@ -245,8 +245,7 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
 
         decoding = instr.split(' ')
 
-
-        if decoding[0][0] == '.': # Запись нового лейбла
+        if decoding[0][0] == '.':  # Запись нового лейбла
             current_label = decoding[0]
 
             assert len(decoding) == 1, 'Label should be located on a separate line '
@@ -256,7 +255,7 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
             if current_label == 'start':
                 start_addr = addr_counter
             labels[current_label] = addr_counter
-        else: # Декодирование операнда
+        else:  # Декодирование операнда
             assert Opcode(decoding[0].lower()) is not None, 'There is no such command'
 
             current_operation = Operation(Opcode(decoding[0].lower()), addr_counter)
