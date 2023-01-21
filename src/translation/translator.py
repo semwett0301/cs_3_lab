@@ -139,18 +139,18 @@ def add_start_address(operations: list[Operation], start_address: int):
     return operations
 
 
-def add_io_variables(operations: list[Operation]) -> tuple[list[Operation], int]:
-    """Добавление ячеек под ввод и вывод"""
-    for command in operations:
-        command.position += 2
-
-    operations.insert(0, Operation(Opcode.DATA, 1))
-    operations[0].add_argument(Argument(AddrMode.DATA, 0))
-
-    operations.insert(0, Operation(Opcode.DATA, 0))
-    operations[0].add_argument(Argument(AddrMode.DATA, 0))
-
-    return operations, 2
+# def add_io_variables(operations: list[Operation]) -> tuple[list[Operation], int]:
+#     """Добавление ячеек под ввод и вывод"""
+#     for command in operations:
+#         command.position += 2
+#
+#     operations.insert(0, Operation(Opcode.DATA, 1))
+#     operations[0].add_argument(Argument(AddrMode.DATA, 0))
+#
+#     operations.insert(0, Operation(Opcode.DATA, 0))
+#     operations[0].add_argument(Argument(AddrMode.DATA, 0))
+#
+#     return operations, 2
 
 
 def resolve_variable(operation: Operation, variables: dict[str, int]) -> Operation:
@@ -315,8 +315,8 @@ def translate(source: str) -> list[Operation]:
     text, start_addr = parse_text(code[text_start:text_stop])
 
     joined_program, data_offset = join_text_and_data(text, data, data_i > text_i, variables)
-    joined_program_with_io, io_offset = add_io_variables(joined_program)
-    result = add_start_address(joined_program_with_io, start_addr + data_offset + io_offset)
+    # joined_program_with_io, io_offset = add_io_variables(joined_program)
+    result = add_start_address(joined_program, start_addr + data_offset)
 
     return result
 
