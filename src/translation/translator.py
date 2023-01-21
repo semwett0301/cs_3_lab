@@ -4,7 +4,7 @@ import sys
 
 from src.machine.config import Register
 from src.translation.isa import Opcode, Operation, Argument, AddrMode, \
-    write_code, OperationRestrictionConfig, OperationType
+    write_code, OperationRestrictionConfig, OperationType, OperationRestriction
 from src.translation.preprocessor import preprocessing
 
 
@@ -86,8 +86,21 @@ def decode_int(operation: Operation, arg: str) -> Operation:
 def check_correct_amount_of_operands(operation: Operation):
     """Проверяет, корректное ли количество операндов в операции использовано"""
     if operation.opcode in OperationRestrictionConfig:
-        assert OperationRestrictionConfig[operation.opcode].amount.value == len(
+        restriction: OperationRestriction = OperationRestrictionConfig[operation.opcode]
+        argument_types: list[AddrMode] = []
+
+        for arg in operation.args:
+            if arg.mode not in argument_types:
+                argument_types.append(arg.mode)
+
+        assert restriction.amount.value == len(
             operation.args), 'You are using an operation with an incorrect number of operands'
+
+        if OperationType.MEM in restriction.types or OperationType.REGISTER in restriction.types:
+            assert AddrMode.REG in argument_types, 'You should use at least one register in the register and memory commands'
+
+        if OperationType.BRANCH in restriction.types:
+            assert AddrMode.REL in argument_types, 'You should use only labels in branch command'
 
 
 def check_operand_constraints(operation: Operation, arg: str, arg_num: int):
@@ -109,9 +122,6 @@ def check_operand_constraints(operation: Operation, arg: str, arg_num: int):
                 "You must use register as the 2nd argument in LD"
         else:
             assert arg[0] in ('#', '('), "You must use address or variable as the 1st argument in LD"
-
-    if OperationType.BRANCH in OperationRestrictionConfig[operation.opcode].types:
-        assert arg_num == 0 and arg[0] == '.', 'You must use branch commands only with 1 argument and only with labels'
 
 
 def resolve_labels(operations: list[Operation], labels: dict[str, int],
