@@ -74,7 +74,7 @@ reg_op_restriction = OperationRestriction(AmountOperandType.TWO)
 reg_op_restriction.add_operation_type(OperationType.REGISTER)
 
 # Сбор ограничений для каждой операции
-OperationRestrictionConfig: dict[Opcode, OperationRestriction] = {
+operation_restriction_config: dict[Opcode, OperationRestriction] = {
     Opcode.DATA: no_op_restriction,
     Opcode.HLT: no_op_restriction,
 
@@ -96,6 +96,11 @@ OperationRestrictionConfig: dict[Opcode, OperationRestriction] = {
     Opcode.DIV: reg_op_restriction,
     Opcode.MUL: reg_op_restriction,
     Opcode.CMP: reg_op_restriction,
+}
+
+# Исключения в общих ограничениях
+operation_general_rules_exceptions: dict[Opcode, list[OperationType]] = {
+    Opcode.ST: [OperationType.REGISTER]
 }
 
 
@@ -129,7 +134,7 @@ class Operation:
 
     def is_corr_to_type(self, operation_type: OperationType) -> bool:
         """Проверяет поддерживает ли операция тот или иной тип"""
-        return operation_type in OperationRestrictionConfig[self.opcode].types
+        return operation_type in operation_restriction_config[self.opcode].types
 
 
 class Encoder(json.JSONEncoder):

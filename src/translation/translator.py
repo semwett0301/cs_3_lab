@@ -4,7 +4,7 @@ import sys
 
 from src.machine.config import Register
 from src.translation.isa import Opcode, Operation, Argument, AddrMode, \
-    write_code, OperationRestrictionConfig, OperationType, OperationRestriction
+    write_code, operation_restriction_config, OperationType, OperationRestriction, operation_general_rules_exceptions
 from src.translation.preprocessor import preprocessing
 
 
@@ -83,32 +83,39 @@ def decode_int(operation: Operation, arg: str) -> Operation:
         raise ValueError("You must write chars in single quotes") from char_error
 
 
-def check_correct_amount_of_operands(operation: Operation):
+def check_operation_type(operation: Operation):
     """Проверяет, корректное ли количество операндов в операции использовано"""
-    if operation.opcode in OperationRestrictionConfig:
-        restriction: OperationRestriction = OperationRestrictionConfig[operation.opcode]
+    if operation.opcode in operation_restriction_config:
+        restriction_types: list[OperationType] = operation_restriction_config[operation.opcode].types.copy()
+        restriction_amount: int = operation_restriction_config[operation.opcode].amount.value
         argument_types: list[AddrMode] = []
 
         for arg in operation.args:
-            if arg.mode not in argument_types:
-                argument_types.append(arg.mode)
+            argument_types.append(arg.mode)
 
-        assert restriction.amount.value == len(
+        assert restriction_amount == len(
             operation.args), 'You are using an operation with an incorrect number of operands'
 
-        if OperationType.MEM in restriction.types or OperationType.REGISTER in restriction.types:
-            assert AddrMode.REG in argument_types, 'You should use at least one register in the register and memory commands'
+        # Применение исключений на операцию
+        if operation.opcode in operation_general_rules_exceptions:
+            for exception in operation_general_rules_exceptions[operation.opcode]:
+                if exception in restriction_types:
+                    restriction_types.remove(exception)
 
-        if OperationType.BRANCH in restriction.types:
-            assert AddrMode.REL in argument_types, 'You should use only labels in branch command'
+        if OperationType.REGISTER in restriction_types:
+            assert operation.args[
+                       0].mode == AddrMode.REG, 'You should use register as the first argument in register commands'
+
+        if OperationType.MEM in restriction_types:
+            assert AddrMode.REG in argument_types, 'You should use at least one register in the memory commands'
+
+        if OperationType.BRANCH in restriction_types:
+            assert len(
+                argument_types) == 1 and AddrMode.REL in argument_types, 'You should use only labels and only one operands in branch command'
 
 
-def check_operand_constraints(operation: Operation, arg: str, arg_num: int):
+def check_mem_operand_constraints(operation: Operation, arg: str, arg_num: int):
     """Проверяет ограничения, наложенные на отдельные команды"""
-    if operation.opcode in (Opcode.INC, Opcode.DEC):
-        assert Register(arg[1:].lower()) is not None and arg_num == 0, \
-            "You must use INC and DEC only with one argument and only with register"
-
     if operation.opcode == Opcode.LD:
         if arg_num == 0:
             assert Register(arg[1:].lower()) is not None, \
@@ -262,7 +269,7 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
             arg_counter = 0
             for arg in decoding[1:]:
                 # Проверка ограничений конкретных команд
-                check_operand_constraints(current_operation, arg, arg_counter)
+                check_mem_operand_constraints(current_operation, arg, arg_counter)
 
                 if arg[0] == '%':
                     current_operation = decode_register(current_operation, arg[1:])
@@ -284,7 +291,7 @@ def parse_text(text: str) -> tuple[list[Operation], int]:
                 arg_counter += 1
 
             # Проверка корректности команды и ее сохранение
-            check_correct_amount_of_operands(current_operation)
+            check_operation_type(current_operation)
             result.append(current_operation)
             addr_counter += 1
 
