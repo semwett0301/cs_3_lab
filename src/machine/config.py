@@ -10,3 +10,11 @@ class Register(str, Enum):
     R3 = 'r3'
     R4 = 'r4'
     R5 = 'r5'
+
+
+class ReservedVariable(int, Enum):
+    """Адреса зарезервированных переменных"""
+    STDIN = 0
+    STDOUT = 1
+
+

@@ -38,7 +38,7 @@
                 "mode": "register"
             },
             {
-                "data": -3,
+                "data": -2,
                 "mode": "relative"
             }
         ]
@@ -62,7 +62,7 @@
         "position": 5,
         "args": [
             {
-                "data": 3,
+                "data": 4,
                 "mode": "relative"
             }
         ]
@@ -72,7 +72,7 @@
         "position": 6,
         "args": [
             {
-                "data": 2,
+                "data": 1,
                 "mode": "absolute"
             },
             {
@@ -96,7 +96,7 @@
         "position": 8,
         "args": [
             {
-                "data": -6,
+                "data": -5,
                 "mode": "relative"
             }
         ]

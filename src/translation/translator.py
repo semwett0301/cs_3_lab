@@ -2,7 +2,7 @@
 import re
 import sys
 
-from src.machine.config import Register
+from src.machine.config import Register, ReservedVariable
 from src.translation.isa import Opcode, Operation, Argument, AddrMode, \
     write_code, operation_restriction_config, OperationType, operation_general_rules_exceptions
 from src.translation.preprocessor import preprocessing
@@ -21,7 +21,7 @@ def decode_label(operation: Operation, arg: str, labels: dict[str, int]) -> tupl
     assert operation.is_corr_to_type(OperationType.BRANCH), 'You cant use labels not in branch command'
 
     if arg in labels:
-        addr: int | str = labels[arg] - operation.position - 1
+        addr: int | str = labels[arg] - operation.position
     else:
         addr = arg
     operation.add_argument(Argument(AddrMode.REL, addr))
@@ -34,10 +34,9 @@ def decode_absolute(operation: Operation, arg: str) -> Operation:
     assert operation.is_corr_to_type(OperationType.MEM), 'You cant access to memory not in ld and st command'
     address: int
 
-    if arg == 'STDIN':
-        address = 1
-    elif arg == 'STDOUT':
-        address = 2
+
+    if ReservedVariable[arg] is not None:
+        address = ReservedVariable[arg].value
     else:
         try:
             address = int(arg)
@@ -140,7 +139,7 @@ def resolve_labels(operations: list[Operation], labels: dict[str, int],
 
         for operation_position, argument_number in params:
             operation = operations[operation_position]
-            operation.args[argument_number].data = labels[label_name] - operation.position - 1
+            operation.args[argument_number].data = labels[label_name] - operation.position
 
     return operations
 
@@ -176,7 +175,7 @@ def resolve_variable(operation: Operation, variables: dict[str, int]) -> Operati
     if operation.is_corr_to_type(OperationType.MEM):
         for arg in operation.args:
             if arg.mode is AddrMode.REL and isinstance(arg.data, str) and arg.data in variables:
-                arg.data = variables[arg.data] - operation.position - 1
+                arg.data = variables[arg.data] - operation.position
                 assert not isinstance(arg.data, str), 'You use undefined variable'
 
     return operation

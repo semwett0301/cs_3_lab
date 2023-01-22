@@ -157,7 +157,7 @@ def write_code(filename: str, code: list[Operation]) -> None:
         file.write(json.dumps(code, indent=4, cls=Encoder))
 
 
-def read_code(filename: str) -> object:
+def read_code(filename: str) -> list[Operation]:
     """Функция декодирования и чтения команд"""
 
     with open(filename, encoding="utf-8") as file:
