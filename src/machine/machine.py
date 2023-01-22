@@ -2,9 +2,9 @@ import logging
 import sys
 from enum import Enum
 
-from src.machine.config import ReservedVariable, Register, resolve_overflow, AMOUNT_OF_MEMORY, RegFile, Alu, \
+from config import ReservedVariable, Register, resolve_overflow, AMOUNT_OF_MEMORY, RegFile, Alu, \
     AluOperations, RegLatchSignals, opcode2operation
-from src.translation.isa import read_code, Opcode, Argument, AddrMode, Operation
+from translation.isa import read_code, Opcode, Argument, AddrMode, Operation
 
 
 class DataPath:

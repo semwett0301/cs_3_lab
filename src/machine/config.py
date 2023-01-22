@@ -2,6 +2,8 @@
 
 from enum import Enum
 
+from translation.isa import Opcode
+
 
 class Register(str, Enum):
     """Список поддерживаемых регистров"""
