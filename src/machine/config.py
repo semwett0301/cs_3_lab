@@ -18,3 +18,18 @@ class ReservedVariable(int, Enum):
     STDOUT = 1
 
 
+# Длина машинного слова
+WORD_LENGTH: int = 64
+
+# Количество ячеек памяти
+AMOUNT_OF_MEMORY = 1024
+
+
+def resolve_overflow(arg: int) -> int:
+    """Отвечает за соблюдение машинного слова"""
+    while arg > 9223372036854775807:
+        arg = -9223372036854775808 + (arg - 9223372036854775808)
+    while arg < -9223372036854775808:
+        arg = 9223372036854775808 - (arg + 9223372036854775808)
+
+    return arg

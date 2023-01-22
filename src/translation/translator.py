@@ -213,6 +213,7 @@ def parse_data(data: str) -> list:
     addr_counter = 0
 
     for line in data.split('\n'):
+        assert len(line.split(' ')) == 2, 'You must write only 1 value for 1 variable'
         current_operation = Operation(Opcode.DATA, addr_counter)
 
         var_description = line.split(':')
