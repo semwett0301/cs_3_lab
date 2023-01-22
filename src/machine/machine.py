@@ -7,7 +7,6 @@ from src.machine.config import ReservedVariable, Register, resolve_overflow, AMO
 from src.translation.isa import read_code, Opcode, Argument, AddrMode, Operation
 
 
-
 class DataPath:
     """Класс, эмулирующий тракт данных, предоставляющий интерфейс для CU"""
 
@@ -218,6 +217,7 @@ class ControlUnit:
             self.data_path.set_regs_args(sel_out=goal)
             self.data_path.latch_register(RegLatchSignals.MEM)
             self.latch_step_counter(sel_next=False)
+            self.latch_inc_program_counter()
 
     def __stoan_common_part(self, goal: int | None, arg: Register, offset: int):
         if self.step_counter == 1 + offset:
@@ -227,6 +227,7 @@ class ControlUnit:
             self.data_path.set_regs_args(sel_arg_2=arg)
             self.data_path.write()
             self.latch_step_counter(sel_next=False)
+            self.latch_inc_program_counter()
 
     def decode_and_execute_instruction(self):
         """Прочитать и исполнить инструкцию (в потактовом режиме)"""
@@ -256,6 +257,7 @@ class ControlUnit:
                         self.data_path.latch_pc()
 
                     self.latch_step_counter(sel_next=False)
+                    self.latch_inc_program_counter()
 
             if opcode in (Opcode.INC, Opcode.DEC):
                 if self.step_counter == 1:
@@ -272,6 +274,7 @@ class ControlUnit:
                 else:
                     self.data_path.latch_register(RegLatchSignals.ALU)
                     self.latch_step_counter(sel_next=False)
+                    self.latch_inc_program_counter()
 
             if opcode in (Opcode.ADD, Opcode.SUB, Opcode.DIV, Opcode.MOD, Opcode.MUL):
                 if self.step_counter == 1:
@@ -290,6 +293,7 @@ class ControlUnit:
                 else:
                     self.data_path.latch_register(RegLatchSignals.ALU)
                     self.latch_step_counter(sel_next=False)
+                    self.latch_inc_program_counter()
 
             if opcode is Opcode.CMP:
                 first_arg, second_arg = self.current_operation.args
@@ -303,6 +307,7 @@ class ControlUnit:
 
                 self.data_path.execute_data_alu(opcode2operation[opcode])
                 self.latch_step_counter(sel_next=False)
+                self.latch_inc_program_counter()
 
             if opcode is Opcode.MOV:
                 first_arg, second_arg = self.current_operation.args
@@ -320,6 +325,7 @@ class ControlUnit:
                     else:
                         self.data_path.latch_register(RegLatchSignals.ARG, second_arg.data)
                         self.latch_step_counter(sel_next=False)
+                        self.latch_inc_program_counter()
 
             if opcode is Opcode.LD:
                 first_arg, second_arg = self.current_operation.args
