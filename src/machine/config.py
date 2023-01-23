@@ -2,16 +2,7 @@
 
 from enum import Enum
 
-from src.translation.isa import Opcode
-
-
-class Register(str, Enum):
-    """Список поддерживаемых регистров"""
-    R1 = 'r1'
-    R2 = 'r2'
-    R3 = 'r3'
-    R4 = 'r4'
-    R5 = 'r5'
+from src.translation.isa import Opcode, Register
 
 
 class ReservedVariable(int, Enum):

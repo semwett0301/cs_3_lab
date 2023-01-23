@@ -19,12 +19,12 @@ class TranslatorTest(unittest.TestCase):
 
         self.assertEqual(len(result_code), len(correct_code))
 
-        for idx in range(len(result_code)):
-            self.assertEqual(result_code[idx].opcode, correct_code[idx].opcode)
-            self.assertEqual(result_code[idx].position, correct_code[idx].position)
-            for arg_idx in range(len(result_code[idx].args)):
-                self.assertEqual(result_code[idx].args[arg_idx].mode, result_code[idx].args[arg_idx].mode)
-                self.assertEqual(result_code[idx].args[arg_idx].data, result_code[idx].args[arg_idx].data)
+        for idx, operation in enumerate(result_code):
+            self.assertEqual(operation.opcode, correct_code[idx].opcode)
+            self.assertEqual(operation.position, correct_code[idx].position)
+            for arg_idx, arg in enumerate(operation.args):
+                self.assertEqual(arg.mode, correct_code[idx].args[arg_idx].mode)
+                self.assertEqual(arg.data, correct_code[idx].args[arg_idx].data)
 
     def test_cat(self):
         """Тест cat"""

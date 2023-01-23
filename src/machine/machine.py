@@ -1,3 +1,5 @@
+"""Модуль процессора"""
+
 import logging
 import sys
 
@@ -12,7 +14,7 @@ class DataPath:
     def __init__(self):
         self.memory: list[Operation] = []
         self.reg_file: RegFile = RegFile()
-        self.pc: int = 0
+        self.pc_counter: int = 0
         self.addr_reg: int = 0
 
         self.data_alu: Alu = Alu()
@@ -56,7 +58,7 @@ class DataPath:
 
     def set_addr_alu_args(self, argument: int):
         """Метод для эмуляции ввода данных в АЛУ, связанного счетчиком команд"""
-        self.addr_alu.left = self.pc
+        self.addr_alu.left = self.pc_counter
         self.addr_alu.right = argument
 
     def execute_data_alu(self, instruction: AluOperations):
@@ -84,7 +86,7 @@ class DataPath:
 
     def latch_pc(self, operand: int | None = None):
         """Установка значений PC"""
-        self.pc = self.__get_addr_argument(operand)
+        self.pc_counter = self.__get_addr_argument(operand)
 
     def latch_addr_register(self, operand: int | None = None):
         """Установка значений адресного регистра"""
@@ -106,7 +108,8 @@ class DataPath:
 
     def __rw_restrictions(self):
         """Ограничения на записываемые / читаемые значения - вспомогательная функция"""
-        assert self.memory[self.addr_reg].opcode == Opcode.DATA, "You are trying to get access to the instruction in read/write operations"
+        assert self.memory[
+                   self.addr_reg].opcode == Opcode.DATA, "You are trying to get access to the instruction in read/write operations"
         assert len(self.memory[self.addr_reg].args) and self.memory[self.addr_reg].args[
             0].mode == AddrMode.DATA, "You must have 1 data arguments in data cells"
 
@@ -188,6 +191,7 @@ class ControlUnit:
         return self._tick
 
     def latch_step_counter(self, sel_next: bool):
+        """Защелкнуть счетчик шагов"""
         if sel_next:
             self.step_counter += 1
         else:
@@ -195,7 +199,7 @@ class ControlUnit:
 
     def latch_inc_program_counter(self):
         """Увеличивает счетчик команд на 1 - переходит к следующей инструкции"""
-        self.data_path.latch_pc(self.data_path.pc + 1)
+        self.data_path.latch_pc(self.data_path.pc_counter + 1)
 
     def __calc_relative_addr(self, offset: int):
         """Вычисление относительного адреса - вспомогательная функция"""
@@ -227,7 +231,7 @@ class ControlUnit:
         self.tick()
 
         if self.current_operation is None or self.step_counter == 0:
-            self.current_operation = self.data_path.memory[self.data_path.pc]
+            self.current_operation = self.data_path.memory[self.data_path.pc_counter]
             self.latch_step_counter(sel_next=True)
         else:
             opcode = self.current_operation.opcode
@@ -360,33 +364,23 @@ class ControlUnit:
                         self.latch_inc_program_counter()
 
     def __repr__(self):
-        state = "TICK: {}, PC: {}, ADDR_REG: {}, R1: {}, R2: {}, R3: {}, R4: {}, R5: {}, D_ALU_BUD: {}, A_ALU_BUD: {}, MEM_BUS: {}, Z: {}, P: {}, STEP_COUNTER: {}".format(
-            self._tick,
-            self.data_path.pc,
-            self.data_path.addr_reg,
-            self.data_path.reg_file.registers[Register.R1],
-            self.data_path.reg_file.registers[Register.R2],
-            self.data_path.reg_file.registers[Register.R3],
-            self.data_path.reg_file.registers[Register.R4],
-            self.data_path.reg_file.registers[Register.R5],
-            self.data_path.data_alu_bus,
-            self.data_path.addr_alu_bus,
-            self.data_path.mem_bus,
-            self.data_path.get_zero_flag(),
-            self.data_path.get_positive_flag(),
-            self.step_counter
-        )
+        state = f"TICK: {self._tick}, PC: {self.data_path.pc_counter}, ADDR_REG: {self.data_path.addr_reg}, " \
+                f"R1: {self.data_path.reg_file.registers[Register.R1]}, R2: {self.data_path.reg_file.registers[Register.R2]}, " \
+                f"R3: {self.data_path.reg_file.registers[Register.R3]}, R4: {self.data_path.reg_file.registers[Register.R4]}, " \
+                f"R5: {self.data_path.reg_file.registers[Register.R5]}, D_ALU_BUD: {self.data_path.data_alu_bus}, " \
+                f"A_ALU_BUD: {self.data_path.addr_alu_bus}, MEM_BUS: {self.data_path.mem_bus}," \
+                f" Z: {self.data_path.get_zero_flag()}, P: {self.data_path.get_positive_flag()}, STEP_COUNTER: {self.step_counter}"
 
         if self.current_operation is not None:
-            operation = self.data_path.memory[self.data_path.pc]
-            opcode: Opcode = operation.opcode
-            cell_num: int = operation.position
-            arguments: list[tuple[AddrMode, int | Register]] = []
+            operation = self.data_path.memory[self.data_path.pc_counter]
+        opcode: Opcode = operation.opcode
+        cell_num: int = operation.position
+        arguments: list[tuple[AddrMode, int | Register]] = []
 
-            for arg in operation.args:
-                arguments.append((arg.mode, arg.data))
+        for arg in operation.args:
+            arguments.append((arg.mode, arg.data))
 
-            action = "\nCELL_NUMBER: {}, OPCODE: {}, ARGS: {}\n".format(cell_num, opcode, arguments)
+            action = f"\nCELL_NUMBER: {cell_num}, OPCODE: {opcode}, ARGS: {arguments}\n"
         else:
             action = "-"
 
@@ -394,6 +388,7 @@ class ControlUnit:
 
 
 def simulation(code: list[Operation], limit: int, input_buffer: list[int]) -> tuple[str, int, int]:
+    """Симуляция программы"""
     control_unit: ControlUnit = ControlUnit()
     control_unit.set_program(code, input_buffer)
     instr_counter = 0
@@ -409,10 +404,10 @@ def simulation(code: list[Operation], limit: int, input_buffer: list[int]) -> tu
     except StopIteration:
         pass
     output = ''
-    for c in control_unit.data_path.output_buffer:
-        output += str(c)
-        if c in range(0x110000):
-            output += '(' + chr(c) + ')' + ' '
+    for char in control_unit.data_path.output_buffer:
+        output += str(char)
+        if char in range(0x110000):
+            output += '(' + chr(char) + ')' + ' '
     return output, instr_counter, control_unit.current_tick()
 
 

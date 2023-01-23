@@ -7,5 +7,5 @@ lab3:
     - python3-coverage run -m pytest --verbose
     - find . -type f -name "*.py" | xargs -t python3-coverage report
     - find . -type f -name "*.py" | xargs -t pep8 --ignore=E501,W503
-    - find . -type f -name "*.py" | xargs -t pylint --disable=C0301,R0903,R1702,R0912,R0914
+    - find . -type f -name "*.py" | xargs -t pylint --disable=C0301,R0903,R1702,R0912,R0914,R0915,R0916
     - find . -type f -name "*.py" | xargs -t mypy --check-untyped-defs --explicit-package-bases --namespace-packages
