@@ -301,7 +301,7 @@ class ControlUnit:
                     self.data_path.set_data_alu_args()
                 else:
                     self.data_path.set_regs_args(sel_arg_1=Register(first_arg.data))
-                    self.data_path.set_data_alu_args(second_arg.data)
+                    self.data_path.set_data_alu_args(int(second_arg.data))
 
                 self.data_path.execute_data_alu(opcode2operation[opcode])
                 self.latch_step_counter(sel_next=False)
@@ -322,7 +322,7 @@ class ControlUnit:
                         self.data_path.set_regs_args(sel_out=Register(first_arg.data))
                         self.latch_step_counter(sel_next=True)
                     else:
-                        self.data_path.latch_register(RegLatchSignals.ARG, second_arg.data)
+                        self.data_path.latch_register(RegLatchSignals.ARG, int(second_arg.data))
                         self.latch_step_counter(sel_next=False)
                         self.latch_inc_program_counter()
 
@@ -331,15 +331,15 @@ class ControlUnit:
 
                 if second_arg.mode == AddrMode.ABS:
                     if self.step_counter < 4:
-                        self.__load_common_part(first_arg.data, second_arg.data, 0)
+                        self.__load_common_part(Register(first_arg.data), int(second_arg.data), 0)
                     else:
                         self.latch_step_counter(sel_next=False)
                         self.latch_inc_program_counter()
                 else:
                     if self.step_counter == 1:
-                        self.__calc_relative_addr(second_arg.data)
+                        self.__calc_relative_addr(int(second_arg.data))
                     elif self.step_counter < 5:
-                        self.__load_common_part(first_arg.data, None, 1)
+                        self.__load_common_part(Register(first_arg.data), None, 1)
                     else:
                         self.latch_step_counter(sel_next=False)
                         self.latch_inc_program_counter()
@@ -348,16 +348,16 @@ class ControlUnit:
                 first_arg, second_arg = self.current_operation.args
                 if first_arg.mode == AddrMode.ABS:
                     if self.step_counter < 3:
-                        self.__stoan_common_part(first_arg.data, second_arg.data, 0)
+                        self.__stoan_common_part(int(first_arg.data), Register(second_arg.data), 0)
                     else:
                         self.latch_step_counter(sel_next=False)
                         self.latch_inc_program_counter()
                 else:
                     if self.step_counter == 1:
-                        self.__calc_relative_addr(first_arg.data)
+                        self.__calc_relative_addr(int(first_arg.data))
                         self.latch_step_counter(sel_next=True)
                     elif self.step_counter < 4:
-                        self.__stoan_common_part(None, second_arg.data, 1)
+                        self.__stoan_common_part(None, Register(second_arg.data), 1)
                     else:
                         self.latch_step_counter(sel_next=False)
                         self.latch_inc_program_counter()
@@ -374,7 +374,7 @@ class ControlUnit:
             operation = self.data_path.memory[self.data_path.pc_counter]
             opcode: Opcode = operation.opcode
             cell_num: int = operation.position
-            arguments: list[tuple[AddrMode, int | Register]] = []
+            arguments: list[tuple[AddrMode, int | Register | str]] = []
 
             for arg in operation.args:
                 arguments.append((arg.mode, arg.data))
