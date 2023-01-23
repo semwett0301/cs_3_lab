@@ -114,11 +114,14 @@ class DataPath:
 
     def read(self):
         """Чтение из памяти (вкл. ввод)"""
-        if self.addr_reg == ReservedVariable.STDIN.value:
-            self.mem_bus = self.input_buffer.pop()
-        else:
-            self.__rw_restrictions()
-            self.mem_bus = self.memory[self.addr_reg].args[0].data
+        try:
+            if self.addr_reg == ReservedVariable.STDIN.value:
+                self.mem_bus = self.input_buffer.pop()
+            else:
+                self.__rw_restrictions()
+                self.mem_bus = int(self.memory[self.addr_reg].args[0].data)
+        except ValueError as error:
+            raise ValueError("You use incorrect argument in LD operation") from error
 
     def write(self):
         """Запись в память (вкл. вывод)"""
@@ -241,7 +244,7 @@ class ControlUnit:
                 arg = self.current_operation.args[0]
 
                 if self.step_counter == 1:
-                    self.__calc_relative_addr(arg.data)
+                    self.__calc_relative_addr(int(arg.data))
                 else:
                     zero = self.data_path.get_zero_flag()
                     positive = self.data_path.get_positive_flag()
