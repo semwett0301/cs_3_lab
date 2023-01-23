@@ -351,6 +351,9 @@ def main(args):
     result = translate(code)
 
     write_code(args[1], result)
+    loc = len(code.split("\n"))
+
+    print(f"source LoC: {loc} instr: {len(result)}")
 
 
 if __name__ == '__main__':
