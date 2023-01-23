@@ -15,7 +15,7 @@ class DataPath:
         self.memory: list[Operation] = []
         self.reg_file: RegFile = RegFile()
         self.pc_counter: int = 0
-        self.addr_reg: int = 0
+        self.addr_bus: int = 0
 
         self.data_alu: Alu = Alu()
         self.data_alu_bus: int = 0
@@ -78,9 +78,9 @@ class DataPath:
         """Установка значений PC"""
         self.pc_counter = self.__get_addr_argument(operand)
 
-    def latch_addr_register(self, operand: int | None = None):
+    def latch_addr_bus(self, operand: int | None = None):
         """Установка значений адресного регистра"""
-        self.addr_reg = self.__get_addr_argument(operand)
+        self.addr_bus = self.__get_addr_argument(operand)
 
     def latch_register(self, sel_reg: RegLatchSignals, argument: int | None = None):
         """Установка значения в выбранный регистр"""
@@ -98,21 +98,21 @@ class DataPath:
 
     def read(self):
         """Чтение из памяти (вкл. ввод)"""
-        if self.addr_reg == ReservedVariable.STDIN.value:
+        if self.addr_bus == ReservedVariable.STDIN.value:
             self.mem_bus = self.input_buffer.pop()
         else:
             self.__rw_restrictions()
-            self.mem_bus = int(self.memory[self.addr_reg].args[0].data)
+            self.mem_bus = int(self.memory[self.addr_bus].args[0].data)
 
     def write(self):
         """Запись в память (вкл. вывод)"""
         write_data = self.reg_file.registers[self.reg_file.argument_2]
 
-        if self.addr_reg == ReservedVariable.STDOUT.value:
+        if self.addr_bus == ReservedVariable.STDOUT.value:
             self.output_buffer.append(write_data)
         else:
             self.__rw_restrictions()
-            self.memory[self.addr_reg].args[0].data = write_data
+            self.memory[self.addr_bus].args[0].data = write_data
 
     def get_zero_flag(self) -> bool:
         """Метод для получения Zero флага"""
@@ -124,8 +124,9 @@ class DataPath:
 
     def __rw_restrictions(self):
         """Ограничения на записываемые / читаемые значения - вспомогательная функция"""
-        assert self.memory[self.addr_reg].opcode == Opcode.DATA, "You are trying to get access to the instruction in read/write operations"
-        assert len(self.memory[self.addr_reg].args) and self.memory[self.addr_reg].args[
+        assert self.memory[
+                   self.addr_bus].opcode == Opcode.DATA, "You are trying to get access to the instruction in read/write operations"
+        assert len(self.memory[self.addr_bus].args) and self.memory[self.addr_bus].args[
             0].mode == AddrMode.DATA, "You must have 1 data arguments in data cells"
 
     def __get_addr_argument(self, operand: int | None) -> int:
@@ -198,14 +199,6 @@ class ControlUnit:
     def latch_inc_program_counter(self):
         """Увеличивает счетчик команд на 1 - переходит к следующей инструкции"""
         self.data_path.latch_pc(self.data_path.pc_counter + 1)
-
-    def __stoan_common_part(self, goal: int | None, arg: Register, offset: int):
-        if self.step_counter == 1 + offset:
-            self.data_path.latch_addr_register(goal)
-        elif self.step_counter == 2 + offset:
-            self.data_path.set_regs_args(sel_arg_2=arg)
-            self.data_path.write()
-        self.latch_step_counter(sel_next=True)
 
     def decode_and_execute_instruction(self):
         """Прочитать и исполнить инструкцию (в потактовом режиме)"""
@@ -316,42 +309,42 @@ class ControlUnit:
                     first_arg, second_arg = self.current_operation.args
 
                     if second_arg.mode == AddrMode.ABS:
-                        if self.step_counter < 4:
-                            self.__load_common_part(Register(first_arg.data), int(second_arg.data), 0)
+                        self.__load_common_part(Register(first_arg.data), int(second_arg.data), 0)
+                        if self.step_counter < 2:
+                            self.latch_step_counter(sel_next=True)
                         else:
                             self.latch_step_counter(sel_next=False)
                             self.latch_inc_program_counter()
                     else:
                         if self.step_counter == 1:
                             self.__calc_relative_addr(int(second_arg.data))
-                        elif self.step_counter < 5:
-                            self.__load_common_part(Register(first_arg.data), None, 1)
                         else:
-                            self.latch_step_counter(sel_next=False)
-                            self.latch_inc_program_counter()
+                            self.__load_common_part(Register(first_arg.data), None, 1)
+                            if self.step_counter < 3:
+                                self.latch_step_counter(sel_next=True)
+                            else:
+                                self.latch_step_counter(sel_next=False)
+                                self.latch_inc_program_counter()
 
                 if opcode is Opcode.ST:
                     first_arg, second_arg = self.current_operation.args
                     if first_arg.mode == AddrMode.ABS:
-                        if self.step_counter < 3:
-                            self.__stoan_common_part(int(first_arg.data), Register(second_arg.data), 0)
-                        else:
-                            self.latch_step_counter(sel_next=False)
-                            self.latch_inc_program_counter()
+                        self.__stoan_common_part(int(first_arg.data), Register(second_arg.data))
+                        self.latch_step_counter(sel_next=False)
+                        self.latch_inc_program_counter()
                     else:
                         if self.step_counter == 1:
                             self.__calc_relative_addr(int(first_arg.data))
                             self.latch_step_counter(sel_next=True)
-                        elif self.step_counter < 4:
-                            self.__stoan_common_part(None, Register(second_arg.data), 1)
                         else:
+                            self.__stoan_common_part(None, Register(second_arg.data))
                             self.latch_step_counter(sel_next=False)
                             self.latch_inc_program_counter()
         except ValueError as error:
             raise ValueError(f'You use incorrect argument in command {self.current_operation}') from error
 
     def __repr__(self):
-        state = f"TICK: {self._tick}, PC: {self.data_path.pc_counter}, ADDR_REG: {self.data_path.addr_reg}, " \
+        state = f"TICK: {self._tick}, PC: {self.data_path.pc_counter}, ADDR_BUS: {self.data_path.addr_bus}, " \
                 f"R1: {self.data_path.reg_file.registers[Register.R1]}, R2: {self.data_path.reg_file.registers[Register.R2]}, " \
                 f"R3: {self.data_path.reg_file.registers[Register.R3]}, R4: {self.data_path.reg_file.registers[Register.R4]}, " \
                 f"R5: {self.data_path.reg_file.registers[Register.R5]}, D_ALU_BUD: {self.data_path.data_alu_bus}, " \
@@ -359,7 +352,7 @@ class ControlUnit:
                 f" Z: {self.data_path.get_zero_flag()}, P: {self.data_path.get_positive_flag()}, STEP_COUNTER: {self.step_counter}"
 
         if self.current_operation is not None:
-            operation = self.data_path.memory[self.data_path.pc_counter]
+            operation = self.current_operation
             opcode: Opcode = operation.opcode
             cell_num: int = operation.position
             arguments: list[tuple[AddrMode, int | Register | str]] = []
@@ -379,16 +372,19 @@ class ControlUnit:
         self.data_path.execute_addr_alu(AluOperations.ADD)
         self.latch_step_counter(sel_next=True)
 
+    def __stoan_common_part(self, goal: int | None, arg: Register):
+        self.data_path.latch_addr_bus(goal)
+        self.data_path.set_regs_args(sel_arg_2=arg)
+        self.data_path.write()
+
     def __load_common_part(self, goal: Register, arg: int | None, offset: int = 0):
         """Общая часть операции загрузки - вспомогательная функция"""
         if self.step_counter == 1 + offset:
-            self.data_path.latch_addr_register(arg)
-        elif self.step_counter == 2 + offset:
+            self.data_path.latch_addr_bus(arg)
             self.data_path.read()
-        elif self.step_counter == 3 + offset:
+        elif self.step_counter == 2 + offset:
             self.data_path.set_regs_args(sel_out=goal)
             self.data_path.latch_register(RegLatchSignals.MEM)
-        self.latch_step_counter(sel_next=True)
 
 
 def simulation(code: list[Operation], limit: int, input_buffer: list[int]) -> tuple[str, int, int]:
@@ -402,9 +398,9 @@ def simulation(code: list[Operation], limit: int, input_buffer: list[int]) -> tu
         while True:
             assert limit > instr_counter, "too long execution, increase limit!"
             control_unit.decode_and_execute_instruction()
-            logging.debug('%s', control_unit)
             if control_unit.step_counter == 0:
                 instr_counter += 1
+            logging.debug('%s', control_unit)
     except StopIteration:
         logging.warning('Program has been stopped')
     except IndexError:
