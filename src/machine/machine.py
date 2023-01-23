@@ -151,6 +151,7 @@ class ControlUnit:
         self.step_counter: int = 0
         self._tick: int = 0
 
+
     def set_program(self, program: list[Operation], input_buffer: list[int]):
         """Ввод программы в процессор"""
         cell_counter: int = len(program)
