@@ -108,20 +108,18 @@ class DataPath:
 
     def __rw_restrictions(self):
         """Ограничения на записываемые / читаемые значения - вспомогательная функция"""
-        assert self.memory[self.addr_reg].opcode == Opcode.DATA, "You are trying to get access to the instruction in read/write operations"
+        assert self.memory[
+                   self.addr_reg].opcode == Opcode.DATA, "You are trying to get access to the instruction in read/write operations"
         assert len(self.memory[self.addr_reg].args) and self.memory[self.addr_reg].args[
             0].mode == AddrMode.DATA, "You must have 1 data arguments in data cells"
 
     def read(self):
         """Чтение из памяти (вкл. ввод)"""
-        try:
-            if self.addr_reg == ReservedVariable.STDIN.value:
-                self.mem_bus = self.input_buffer.pop()
-            else:
-                self.__rw_restrictions()
-                self.mem_bus = int(self.memory[self.addr_reg].args[0].data)
-        except ValueError as error:
-            raise ValueError("You use incorrect argument in LD operation") from error
+        if self.addr_reg == ReservedVariable.STDIN.value:
+            self.mem_bus = self.input_buffer.pop()
+        else:
+            self.__rw_restrictions()
+            self.mem_bus = int(self.memory[self.addr_reg].args[0].data)
 
     def write(self):
         """Запись в память (вкл. вывод)"""
@@ -229,141 +227,145 @@ class ControlUnit:
     def decode_and_execute_instruction(self):
         """Прочитать и исполнить инструкцию (в потактовом режиме)"""
         self.tick()
+        try:
+            if self.current_operation is None or self.step_counter == 0:
+                self.current_operation = self.data_path.memory[self.data_path.pc_counter]
+                self.latch_step_counter(sel_next=True)
+            else:
+                opcode = self.current_operation.opcode
+                assert opcode != Opcode.DATA, "You are trying to execute data section"
 
-        if self.current_operation is None or self.step_counter == 0:
-            self.current_operation = self.data_path.memory[self.data_path.pc_counter]
-            self.latch_step_counter(sel_next=True)
-        else:
-            opcode = self.current_operation.opcode
-            assert opcode != Opcode.DATA, "You are trying to execute data section"
+                if opcode is Opcode.HLT:
+                    raise StopIteration
 
-            if opcode is Opcode.HLT:
-                raise StopIteration
+                if opcode in (Opcode.JMP, Opcode.JE, Opcode.JNE, Opcode.JG):
+                    arg = self.current_operation.args[0]
 
-            if opcode in (Opcode.JMP, Opcode.JE, Opcode.JNE, Opcode.JG):
-                arg = self.current_operation.args[0]
-
-                if self.step_counter == 1:
-                    self.__calc_relative_addr(int(arg.data))
-                else:
-                    zero = self.data_path.get_zero_flag()
-                    positive = self.data_path.get_positive_flag()
-
-                    if opcode == Opcode.JMP \
-                            or opcode == Opcode.JE and zero \
-                            or opcode == Opcode.JNE and not zero \
-                            or opcode == Opcode.JG and positive:
-                        self.data_path.latch_pc()
+                    if self.step_counter == 1:
+                        self.__calc_relative_addr(int(arg.data))
                     else:
+                        zero: bool = self.data_path.get_zero_flag()
+                        positive: bool = self.data_path.get_positive_flag()
+
+                        if opcode == Opcode.JMP \
+                                or opcode == Opcode.JE and zero \
+                                or opcode == Opcode.JNE and not zero \
+                                or opcode == Opcode.JG and positive:
+                            self.data_path.latch_pc()
+                        else:
+                            self.latch_inc_program_counter()
+
+                        self.latch_step_counter(sel_next=False)
+
+                if opcode in (Opcode.INC, Opcode.DEC):
+                    if self.step_counter == 1:
+                        reg: Register = Register(self.current_operation.args[0].data)
+                        self.data_path.set_regs_args(sel_out=reg, sel_arg_1=reg)
+
+                        if opcode == Opcode.INC:
+                            self.data_path.set_data_alu_args(1)
+                        else:
+                            self.data_path.set_data_alu_args(-1)
+
+                        self.data_path.execute_data_alu(opcode2operation[opcode])
+                        self.latch_step_counter(sel_next=True)
+                    else:
+                        self.data_path.latch_register(RegLatchSignals.ALU)
+                        self.latch_step_counter(sel_next=False)
                         self.latch_inc_program_counter()
 
-                    self.latch_step_counter(sel_next=False)
+                if opcode in (Opcode.ADD, Opcode.SUB, Opcode.DIV, Opcode.MOD, Opcode.MUL):
+                    if self.step_counter == 1:
+                        first_arg, second_arg, third_arg = self.current_operation.args
 
-            if opcode in (Opcode.INC, Opcode.DEC):
-                if self.step_counter == 1:
-                    reg: Register = self.current_operation.args[0].data
-                    self.data_path.set_regs_args(sel_out=reg, sel_arg_1=reg)
+                        if third_arg.mode == AddrMode.REG:
+                            self.data_path.set_regs_args(sel_out=Register(first_arg.data),
+                                                         sel_arg_1=Register(second_arg.data),
+                                                         sel_arg_2=Register(third_arg.data))
+                            self.data_path.set_data_alu_args()
+                        else:
+                            self.data_path.set_regs_args(sel_out=Register(first_arg.data),
+                                                         sel_arg_1=Register(second_arg.data))
+                            self.data_path.set_data_alu_args(int(third_arg))
 
-                    if opcode == Opcode.INC:
-                        self.data_path.set_data_alu_args(1)
+                        self.data_path.execute_data_alu(opcode2operation[opcode])
+                        self.latch_step_counter(sel_next=True)
                     else:
-                        self.data_path.set_data_alu_args(-1)
+                        self.data_path.latch_register(RegLatchSignals.ALU)
+                        self.latch_step_counter(sel_next=False)
+                        self.latch_inc_program_counter()
 
-                    self.data_path.execute_data_alu(opcode2operation[opcode])
-                    self.latch_step_counter(sel_next=True)
-                else:
-                    self.data_path.latch_register(RegLatchSignals.ALU)
-                    self.latch_step_counter(sel_next=False)
-                    self.latch_inc_program_counter()
-
-            if opcode in (Opcode.ADD, Opcode.SUB, Opcode.DIV, Opcode.MOD, Opcode.MUL):
-                if self.step_counter == 1:
-                    first_arg, second_arg, third_arg = self.current_operation.args
-
-                    if third_arg.mode == AddrMode.REG:
-                        self.data_path.set_regs_args(sel_out=Register(first_arg.data),
-                                                     sel_arg_1=Register(second_arg.data),
-                                                     sel_arg_2=Register(third_arg.data))
+                if opcode is Opcode.CMP:
+                    first_arg, second_arg = self.current_operation.args
+                    if second_arg.mode == AddrMode.REG:
+                        self.data_path.set_regs_args(sel_arg_1=Register(first_arg.data),
+                                                     sel_arg_2=Register(second_arg.data))
                         self.data_path.set_data_alu_args()
                     else:
-                        self.data_path.set_regs_args(sel_out=Register(first_arg.data),
-                                                     sel_arg_1=Register(second_arg.data))
-                        self.data_path.set_data_alu_args(int(third_arg))
+                        self.data_path.set_regs_args(sel_arg_1=Register(first_arg.data))
+                        self.data_path.set_data_alu_args(int(second_arg.data))
 
                     self.data_path.execute_data_alu(opcode2operation[opcode])
-                    self.latch_step_counter(sel_next=True)
-                else:
-                    self.data_path.latch_register(RegLatchSignals.ALU)
                     self.latch_step_counter(sel_next=False)
                     self.latch_inc_program_counter()
 
-            if opcode is Opcode.CMP:
-                first_arg, second_arg = self.current_operation.args
-                if second_arg.mode == AddrMode.REG:
-                    self.data_path.set_regs_args(sel_arg_1=Register(first_arg.data), sel_arg_2=Register(second_arg.data))
-                    self.data_path.set_data_alu_args()
-                else:
-                    self.data_path.set_regs_args(sel_arg_1=Register(first_arg.data))
-                    self.data_path.set_data_alu_args(int(second_arg.data))
+                if opcode is Opcode.MOV:
+                    first_arg, second_arg = self.current_operation.args
+                    if second_arg.mode == AddrMode.REG:
+                        if self.step_counter == 1:
+                            self.data_path.set_regs_args(sel_out=Register(first_arg.data),
+                                                         sel_arg_1=Register(second_arg.data))
+                            self.latch_step_counter(sel_next=True)
+                        else:
+                            self.data_path.latch_register(RegLatchSignals.REG)
+                            self.latch_step_counter(sel_next=False)
+                            self.latch_inc_program_counter()
+                    else:
+                        if self.step_counter == 1:
+                            self.data_path.set_regs_args(sel_out=Register(first_arg.data))
+                            self.latch_step_counter(sel_next=True)
+                        else:
+                            self.data_path.latch_register(RegLatchSignals.ARG, int(second_arg.data))
+                            self.latch_step_counter(sel_next=False)
+                            self.latch_inc_program_counter()
 
-                self.data_path.execute_data_alu(opcode2operation[opcode])
-                self.latch_step_counter(sel_next=False)
-                self.latch_inc_program_counter()
+                if opcode is Opcode.LD:
+                    first_arg, second_arg = self.current_operation.args
 
-            if opcode is Opcode.MOV:
-                first_arg, second_arg = self.current_operation.args
-                if second_arg.mode == AddrMode.REG:
-                    if self.step_counter == 1:
-                        self.data_path.set_regs_args(sel_out=Register(first_arg.data), sel_arg_1=Register(second_arg.data))
-                        self.latch_step_counter(sel_next=True)
+                    if second_arg.mode == AddrMode.ABS:
+                        if self.step_counter < 4:
+                            self.__load_common_part(Register(first_arg.data), int(second_arg.data), 0)
+                        else:
+                            self.latch_step_counter(sel_next=False)
+                            self.latch_inc_program_counter()
                     else:
-                        self.data_path.latch_register(RegLatchSignals.REG)
-                        self.latch_step_counter(sel_next=False)
-                        self.latch_inc_program_counter()
-                else:
-                    if self.step_counter == 1:
-                        self.data_path.set_regs_args(sel_out=Register(first_arg.data))
-                        self.latch_step_counter(sel_next=True)
-                    else:
-                        self.data_path.latch_register(RegLatchSignals.ARG, int(second_arg.data))
-                        self.latch_step_counter(sel_next=False)
-                        self.latch_inc_program_counter()
+                        if self.step_counter == 1:
+                            self.__calc_relative_addr(int(second_arg.data))
+                        elif self.step_counter < 5:
+                            self.__load_common_part(Register(first_arg.data), None, 1)
+                        else:
+                            self.latch_step_counter(sel_next=False)
+                            self.latch_inc_program_counter()
 
-            if opcode is Opcode.LD:
-                first_arg, second_arg = self.current_operation.args
-
-                if second_arg.mode == AddrMode.ABS:
-                    if self.step_counter < 4:
-                        self.__load_common_part(Register(first_arg.data), int(second_arg.data), 0)
+                if opcode is Opcode.ST:
+                    first_arg, second_arg = self.current_operation.args
+                    if first_arg.mode == AddrMode.ABS:
+                        if self.step_counter < 3:
+                            self.__stoan_common_part(int(first_arg.data), Register(second_arg.data), 0)
+                        else:
+                            self.latch_step_counter(sel_next=False)
+                            self.latch_inc_program_counter()
                     else:
-                        self.latch_step_counter(sel_next=False)
-                        self.latch_inc_program_counter()
-                else:
-                    if self.step_counter == 1:
-                        self.__calc_relative_addr(int(second_arg.data))
-                    elif self.step_counter < 5:
-                        self.__load_common_part(Register(first_arg.data), None, 1)
-                    else:
-                        self.latch_step_counter(sel_next=False)
-                        self.latch_inc_program_counter()
-
-            if opcode is Opcode.ST:
-                first_arg, second_arg = self.current_operation.args
-                if first_arg.mode == AddrMode.ABS:
-                    if self.step_counter < 3:
-                        self.__stoan_common_part(int(first_arg.data), Register(second_arg.data), 0)
-                    else:
-                        self.latch_step_counter(sel_next=False)
-                        self.latch_inc_program_counter()
-                else:
-                    if self.step_counter == 1:
-                        self.__calc_relative_addr(int(first_arg.data))
-                        self.latch_step_counter(sel_next=True)
-                    elif self.step_counter < 4:
-                        self.__stoan_common_part(None, Register(second_arg.data), 1)
-                    else:
-                        self.latch_step_counter(sel_next=False)
-                        self.latch_inc_program_counter()
+                        if self.step_counter == 1:
+                            self.__calc_relative_addr(int(first_arg.data))
+                            self.latch_step_counter(sel_next=True)
+                        elif self.step_counter < 4:
+                            self.__stoan_common_part(None, Register(second_arg.data), 1)
+                        else:
+                            self.latch_step_counter(sel_next=False)
+                            self.latch_inc_program_counter()
+        except ValueError as error:
+            raise ValueError(f'You use incorrect argument in command {self.current_operation.opcode}')
 
     def __repr__(self):
         state = f"TICK: {self._tick}, PC: {self.data_path.pc_counter}, ADDR_REG: {self.data_path.addr_reg}, " \
