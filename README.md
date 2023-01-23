@@ -258,7 +258,48 @@ number ::= [-2^64; 2^64 - 1]
 ### ControlUnit
 
 ## Апробация
+Реализовано несколько видов тестов (использовался `unittest`):
+ - интеграционные тесты: [integration_test](test/integration_test.py)
+ - юнит-тесты транслятора: [unit_translator_test](test/unit_translator_test.py)
+ - юнит-тесты валидации: [unit_validation_test](test/unit_validation_test.py)
+ - юнит-тесты процессора: [unit_machine_test](test/unit_machine_test.py)
 
+Все материалы, использующиеся в тестах: [test](test)
+
+В интеграционных тестах (и частично в юнит-тестах транслятора) реализовано 3 алгоритма:
+  - [hello_world](resources/source/hello.asm)
+  - [cat](resources/source/cat.asm)
+  - [prob5](resources/source/prob5.asm)
+
+Для остальных тестов алгоритмы были написаны отдельно и отражают одну из ключевых зон работы модуля:
+  - юнит-тесты процессора: [examples_correct](resources/examples_correct)
+  - юнит-тесты валидатора: [incorrect](resources/incorrect)
+
+### CI
+```yaml
+lab3:
+  stage: test
+  image:
+    name: python-tools
+    entrypoint: [""]
+  script:
+    - python3-coverage run -m pytest --verbose
+    - find . -type f -name "*.py" | xargs -t python3-coverage report
+    - find . -type f -name "*.py" | xargs -t pep8 --ignore=E501
+    - find . -type f -name "*.py" | xargs -t pylint --disable=C0301,R0903,R1702,R0912,R0914,R0915,R0916,R0902
+    - find . -type f -name "*.py" | xargs -t mypy --check-untyped-defs --explicit-package-bases --namespace-packages
+```
+
+где:
+
+- `python3-coverage` -- формирование отчёта об уровне покрытия исходного кода.
+- `pytest` -- утилита для запуска тестов.
+- `pep8` -- утилита для проверки форматирования кода. `E501` (длина строк) отключено.
+- `pylint` -- утилита для проверки качества кода. Некоторые правила отключены в отдельных модулях с целью упрощения кода.
+- `mypy` -- утилита для проверки корректности статической типизации.
+  - `--check-untyped-defs` -- дополнительная проверка.
+  - `--explicit-package-bases` и `--namespace-packages` -- помогает правильно искать импортированные модули.
+- Docker image `python-tools` включает в себя все перечисленные утилиты. Его конфигурация: [Dockerfile](./Dockerfile).
 
 | ФИО         | алг.  | LoC | code байт | code инстр. | инстр. | такт. | вариант      |
 |-------------|-------|-----|-----------|-------------|--------|-------|--------------|
