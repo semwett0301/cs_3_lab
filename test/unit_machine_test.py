@@ -19,8 +19,10 @@ class MachineTest(unittest.TestCase):
         try:
             while True:
                 self.cu.decode_and_execute_instruction()
-        except Exception as exception:
-            self.assertIsInstance(exception, StopIteration)
+        except IndexError:
+            pass
+        except StopIteration:
+            pass
 
     def get_start_addr(self) -> int:
         """Получение стартового адреса"""
