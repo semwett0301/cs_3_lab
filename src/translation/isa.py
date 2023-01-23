@@ -2,8 +2,15 @@
 import json
 
 from enum import Enum
-from src.machine.config import Register
 
+
+class Register(str, Enum):
+    """Список поддерживаемых регистров"""
+    R1 = 'r1'
+    R2 = 'r2'
+    R3 = 'r3'
+    R4 = 'r4'
+    R5 = 'r5'
 
 class Opcode(str, Enum):
     """Коды операций"""
@@ -152,7 +159,6 @@ class Encoder(json.JSONEncoder):
 
 def write_code(filename: str, code: list[Operation]) -> None:
     """Функция кодирования и записи команд"""
-    print(json.dumps(code, indent=4, cls=Encoder))
     with open(filename, "w", encoding="utf-8") as file:
         file.write(json.dumps(code, indent=4, cls=Encoder))
 
@@ -163,9 +169,15 @@ def read_code(filename: str) -> list[Operation]:
     with open(filename, encoding="utf-8") as file:
         code = json.loads(file.read())  # type: ignore
 
-    for instr in code:
-        instr['opcode'] = Opcode(instr['opcode'])
-        for arg in instr['args']:
-            arg = Argument(AddrMode(arg['mode']), arg['data'])
+    result = []
 
-    return code
+    for instr in code:
+        operation = Operation(Opcode(instr['opcode']), instr['position'])
+        for arg in instr['args']:
+            addr_mode = arg['mode']
+            if addr_mode == AddrMode.REG:
+                arg['data'] = Register(arg['data'])
+            operation.add_argument(Argument(addr_mode, arg['data']))
+        result.append(operation)
+
+    return result

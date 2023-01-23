@@ -4,7 +4,7 @@
         "position": 0,
         "args": [
             {
-                "data": 0,
+                "data": 1,
                 "mode": "relative"
             }
         ]
@@ -14,26 +14,26 @@
         "position": 1,
         "args": [
             {
-                "data": "r1",
+                "data": "r4",
                 "mode": "register"
             },
             {
-                "data": 0,
+                "data": 20,
                 "mode": "data"
             }
         ]
     },
     {
-        "opcode": "ld",
+        "opcode": "mov",
         "position": 2,
         "args": [
             {
-                "data": "r2",
+                "data": "r5",
                 "mode": "register"
             },
             {
-                "data": 0,
-                "mode": "absolute"
+                "data": 2,
+                "mode": "data"
             }
         ]
     },
@@ -46,28 +46,14 @@
                 "mode": "register"
             },
             {
-                "data": 2,
-                "mode": "data"
-            }
-        ]
-    },
-    {
-        "opcode": "mov",
-        "position": 4,
-        "args": [
-            {
-                "data": "r4",
-                "mode": "register"
-            },
-            {
-                "data": "r1",
+                "data": "r5",
                 "mode": "register"
             }
         ]
     },
     {
         "opcode": "inc",
-        "position": 5,
+        "position": 4,
         "args": [
             {
                 "data": "r1",
@@ -77,21 +63,21 @@
     },
     {
         "opcode": "cmp",
-        "position": 6,
+        "position": 5,
         "args": [
             {
                 "data": "r1",
                 "mode": "register"
             },
             {
-                "data": "r2",
+                "data": "r4",
                 "mode": "register"
             }
         ]
     },
     {
         "opcode": "jg",
-        "position": 7,
+        "position": 6,
         "args": [
             {
                 "data": 10,
@@ -101,7 +87,7 @@
     },
     {
         "opcode": "mov",
-        "position": 8,
+        "position": 7,
         "args": [
             {
                 "data": "r3",
@@ -114,9 +100,13 @@
         ]
     },
     {
-        "opcode": "cmp",
-        "position": 9,
+        "opcode": "mod",
+        "position": 8,
         "args": [
+            {
+                "data": "r2",
+                "mode": "register"
+            },
             {
                 "data": "r1",
                 "mode": "register"
@@ -129,7 +119,7 @@
     },
     {
         "opcode": "je",
-        "position": 10,
+        "position": 9,
         "args": [
             {
                 "data": -5,
@@ -139,7 +129,7 @@
     },
     {
         "opcode": "inc",
-        "position": 11,
+        "position": 10,
         "args": [
             {
                 "data": "r3",
@@ -149,7 +139,7 @@
     },
     {
         "opcode": "cmp",
-        "position": 12,
+        "position": 11,
         "args": [
             {
                 "data": "r1",
@@ -163,7 +153,7 @@
     },
     {
         "opcode": "je",
-        "position": 13,
+        "position": 12,
         "args": [
             {
                 "data": 2,
@@ -173,7 +163,7 @@
     },
     {
         "opcode": "jmp",
-        "position": 14,
+        "position": 13,
         "args": [
             {
                 "data": -5,
@@ -183,14 +173,14 @@
     },
     {
         "opcode": "mul",
-        "position": 15,
+        "position": 14,
         "args": [
             {
-                "data": "r4",
+                "data": "r5",
                 "mode": "register"
             },
             {
-                "data": "r4",
+                "data": "r5",
                 "mode": "register"
             },
             {
@@ -201,7 +191,7 @@
     },
     {
         "opcode": "jmp",
-        "position": 16,
+        "position": 15,
         "args": [
             {
                 "data": -11,
@@ -211,7 +201,7 @@
     },
     {
         "opcode": "mov",
-        "position": 17,
+        "position": 16,
         "args": [
             {
                 "data": "r1",
@@ -225,7 +215,7 @@
     },
     {
         "opcode": "add",
-        "position": 18,
+        "position": 17,
         "args": [
             {
                 "data": "r1",
@@ -236,14 +226,14 @@
                 "mode": "register"
             },
             {
-                "data": "r4",
+                "data": "r5",
                 "mode": "register"
             }
         ]
     },
     {
         "opcode": "mov",
-        "position": 19,
+        "position": 18,
         "args": [
             {
                 "data": "r3",
@@ -257,7 +247,7 @@
     },
     {
         "opcode": "inc",
-        "position": 20,
+        "position": 19,
         "args": [
             {
                 "data": "r3",
@@ -266,9 +256,13 @@
         ]
     },
     {
-        "opcode": "cmp",
-        "position": 21,
+        "opcode": "mod",
+        "position": 20,
         "args": [
+            {
+                "data": "r2",
+                "mode": "register"
+            },
             {
                 "data": "r1",
                 "mode": "register"
@@ -281,7 +275,7 @@
     },
     {
         "opcode": "jne",
-        "position": 22,
+        "position": 21,
         "args": [
             {
                 "data": -4,
@@ -291,21 +285,21 @@
     },
     {
         "opcode": "cmp",
-        "position": 23,
+        "position": 22,
         "args": [
             {
                 "data": "r3",
                 "mode": "register"
             },
             {
-                "data": "r2",
+                "data": "r4",
                 "mode": "register"
             }
         ]
     },
     {
         "opcode": "je",
-        "position": 24,
+        "position": 23,
         "args": [
             {
                 "data": 2,
@@ -315,7 +309,7 @@
     },
     {
         "opcode": "jmp",
-        "position": 25,
+        "position": 24,
         "args": [
             {
                 "data": -5,
@@ -325,7 +319,7 @@
     },
     {
         "opcode": "st",
-        "position": 26,
+        "position": 25,
         "args": [
             {
                 "data": 1,
@@ -339,7 +333,7 @@
     },
     {
         "opcode": "hlt",
-        "position": 27,
+        "position": 26,
         "args": []
     }
 ]

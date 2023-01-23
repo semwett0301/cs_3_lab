@@ -1,15 +1,41 @@
 section .data
     H: 'h'
-    A: 'a'
+    E: 'e'
+    L: 'l'
+    O: 'o'
+    comma: ','
+    space: ' '
+    W: 'w'
+    R: 'r'
+    D: 'd'
+    !: '!'
 
 section .text
 .start:
-    .print_char:
-        LD %r1, (H)
-        CMP %r1, 0
-        JE .exit ; ndjz vfnm ik.[; ffd
-        ST #STDOUT, %r1
-        INC %r1
-        JMP .print_char
-    .exit:
-        HLT
+       LD %r1, (H)
+       ST #STDOUT, %r1
+       LD %r1, (E)
+       ST #STDOUT, %r1
+       LD %r1, (L)
+       ST #STDOUT, %r1
+       LD %r1, (L)
+       ST #STDOUT, %r1
+       LD %r1, (O)
+       ST #STDOUT, %r1
+       LD %r1, (comma)
+       ST #STDOUT, %r1
+       LD %r1, (space)
+       ST #STDOUT, %r1
+       LD %r1, (W)
+       ST #STDOUT, %r1
+       LD %r1, (O)
+       ST #STDOUT, %r1
+       LD %r1, (R)
+       ST #STDOUT, %r1
+       LD %r1, (L)
+       ST #STDOUT, %r1
+       LD %r1, (D)
+       ST #STDOUT, %r1
+       LD %r1, (!)
+       ST #STDOUT, %r1
+       HLT

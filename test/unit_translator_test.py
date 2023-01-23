@@ -17,7 +17,14 @@ class TranslatorTest(unittest.TestCase):
         result_code = isa.read_code(output)
         correct_code = isa.read_code(correct)
 
-        self.assertEqual(result_code, correct_code)
+        self.assertEqual(len(result_code), len(correct_code))
+
+        for idx in range(len(result_code)):
+            self.assertEqual(result_code[idx].opcode, correct_code[idx].opcode)
+            self.assertEqual(result_code[idx].position, correct_code[idx].position)
+            for arg_idx in range(len(result_code[idx].args)):
+                self.assertEqual(result_code[idx].args[arg_idx].mode, result_code[idx].args[arg_idx].mode)
+                self.assertEqual(result_code[idx].args[arg_idx].data, result_code[idx].args[arg_idx].data)
 
     def test_cat(self):
         """Тест cat"""

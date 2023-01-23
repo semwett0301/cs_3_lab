@@ -117,11 +117,11 @@ number ::= [-2^64; 2^64 - 1]
 
 Интерфейс командной строки: `translator.py <input_file> <target_file>"`
 
-Реализовано в модуле: [translator](./src/translation/translator.py)
+Реализовано в модуле: [translator](src/translation/translator.py)
 
 Этапы трансляции (функция `translate`):
 
-1. Препроцессирование исходного кода: удаление лишних пробелов, запятых, комментариев. Реализовано в функции `preprocessing` модуля [preprocessor](./src/translation/preprocessor.py)
+1. Препроцессирование исходного кода: удаление лишних пробелов, запятых, комментариев. Реализовано в функции `preprocessing` модуля [preprocessor](src/translation/preprocessor.py)
 2. Проверка наличия метки `.start`
 3. Преобразование `section .text` в машинный код (с учетом ограничений) - функция `parse_text`
 4. Преобразование `section .data` в машинный код (с учетом ограничений) - функция `parse_data`

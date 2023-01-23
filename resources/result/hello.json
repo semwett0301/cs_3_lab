@@ -4,7 +4,7 @@
         "position": 0,
         "args": [
             {
-                "data": 2,
+                "data": 11,
                 "mode": "relative"
             }
         ]
@@ -24,52 +24,108 @@
         "position": 2,
         "args": [
             {
-                "data": 97,
+                "data": 101,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "data",
+        "position": 3,
+        "args": [
+            {
+                "data": 108,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "data",
+        "position": 4,
+        "args": [
+            {
+                "data": 111,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "data",
+        "position": 5,
+        "args": [
+            {
+                "data": 44,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "data",
+        "position": 6,
+        "args": [
+            {
+                "data": 32,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "data",
+        "position": 7,
+        "args": [
+            {
+                "data": 119,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "data",
+        "position": 8,
+        "args": [
+            {
+                "data": 114,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "data",
+        "position": 9,
+        "args": [
+            {
+                "data": 100,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "data",
+        "position": 10,
+        "args": [
+            {
+                "data": 33,
                 "mode": "data"
             }
         ]
     },
     {
         "opcode": "ld",
-        "position": 3,
+        "position": 11,
         "args": [
             {
                 "data": "r1",
                 "mode": "register"
             },
             {
-                "data": -2,
-                "mode": "relative"
-            }
-        ]
-    },
-    {
-        "opcode": "cmp",
-        "position": 4,
-        "args": [
-            {
-                "data": "r1",
-                "mode": "register"
-            },
-            {
-                "data": 0,
-                "mode": "data"
-            }
-        ]
-    },
-    {
-        "opcode": "je",
-        "position": 5,
-        "args": [
-            {
-                "data": 4,
+                "data": -10,
                 "mode": "relative"
             }
         ]
     },
     {
         "opcode": "st",
-        "position": 6,
+        "position": 12,
         "args": [
             {
                 "data": 1,
@@ -82,9 +138,27 @@
         ]
     },
     {
-        "opcode": "inc",
-        "position": 7,
+        "opcode": "ld",
+        "position": 13,
         "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": -11,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "st",
+        "position": 14,
+        "args": [
+            {
+                "data": 1,
+                "mode": "absolute"
+            },
             {
                 "data": "r1",
                 "mode": "register"
@@ -92,18 +166,316 @@
         ]
     },
     {
-        "opcode": "jmp",
-        "position": 8,
+        "opcode": "ld",
+        "position": 15,
         "args": [
             {
-                "data": -5,
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": -12,
                 "mode": "relative"
             }
         ]
     },
     {
+        "opcode": "st",
+        "position": 16,
+        "args": [
+            {
+                "data": 1,
+                "mode": "absolute"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "ld",
+        "position": 17,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": -14,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "st",
+        "position": 18,
+        "args": [
+            {
+                "data": 1,
+                "mode": "absolute"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "ld",
+        "position": 19,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": -15,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "st",
+        "position": 20,
+        "args": [
+            {
+                "data": 1,
+                "mode": "absolute"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "ld",
+        "position": 21,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": -16,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "st",
+        "position": 22,
+        "args": [
+            {
+                "data": 1,
+                "mode": "absolute"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "ld",
+        "position": 23,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": -17,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "st",
+        "position": 24,
+        "args": [
+            {
+                "data": 1,
+                "mode": "absolute"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "ld",
+        "position": 25,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": -18,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "st",
+        "position": 26,
+        "args": [
+            {
+                "data": 1,
+                "mode": "absolute"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "ld",
+        "position": 27,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": -23,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "st",
+        "position": 28,
+        "args": [
+            {
+                "data": 1,
+                "mode": "absolute"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "ld",
+        "position": 29,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": -21,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "st",
+        "position": 30,
+        "args": [
+            {
+                "data": 1,
+                "mode": "absolute"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "ld",
+        "position": 31,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": -28,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "st",
+        "position": 32,
+        "args": [
+            {
+                "data": 1,
+                "mode": "absolute"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "ld",
+        "position": 33,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": -24,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "st",
+        "position": 34,
+        "args": [
+            {
+                "data": 1,
+                "mode": "absolute"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "ld",
+        "position": 35,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": -25,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "st",
+        "position": 36,
+        "args": [
+            {
+                "data": 1,
+                "mode": "absolute"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            }
+        ]
+    },
+    {
         "opcode": "hlt",
-        "position": 9,
+        "position": 37,
         "args": []
     }
 ]

@@ -65,8 +65,8 @@ def decode_char(operation: Operation, arg: str) -> Operation:
     try:
         operation.add_argument(Argument(AddrMode.DATA, ord(arg[:-1])))
         return operation
-    except ValueError as char_error:
-        raise ValueError("You can't write a string as an argument, only a char") from char_error
+    except TypeError as char_error:
+        raise TypeError("You can't write a string as an argument, only a char") from char_error
 
 
 def decode_int(operation: Operation, arg: str) -> Operation:
@@ -150,7 +150,7 @@ def add_start_address(operations: list[Operation], start_address: int):
         command.position += 1
 
     jmp_start_addr = Operation(Opcode.JMP, 0)
-    jmp_start_addr.add_argument(Argument(AddrMode.REL, start_address))
+    jmp_start_addr.add_argument(Argument(AddrMode.REL, start_address + 1))
 
     operations.insert(0, jmp_start_addr)
     return operations
@@ -213,17 +213,19 @@ def parse_data(data: str) -> list:
     addr_counter = 0
 
     for line in data.split('\n'):
-        assert len(line.split(' ')) == 2, 'You must write only 1 value for 1 variable'
+        assert len(line.split(' ')) == 2 or line.find("' '") != -1, 'You must write only 1 value for 1 variable'
         current_operation = Operation(Opcode.DATA, addr_counter)
 
         var_description = line.split(':')
         assert len(var_description) == 2, 'You must write : only after name of variable'
 
         name, value = var_description[0], re.sub(r'\s+', '', var_description[1])
+
         assert name[0][-1] != ' ', 'You must write : only after variable name'
         assert name not in variables, 'Redefining a variable'
 
         if value[0] == "'":
+            print(value)
             current_operation = decode_char(current_operation, value[1:])
         else:
             current_operation = decode_int(current_operation, value)
@@ -353,5 +355,5 @@ def main(args):
 
 
 if __name__ == '__main__':
-    sys.path.append('.')
+    sys.path.append('')
     main(sys.argv[1:])

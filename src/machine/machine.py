@@ -1,10 +1,9 @@
 import logging
 import sys
-from enum import Enum
 
-from config import ReservedVariable, Register, resolve_overflow, AMOUNT_OF_MEMORY, RegFile, Alu, \
+from src.machine.config import ReservedVariable, Register, resolve_overflow, AMOUNT_OF_MEMORY, RegFile, Alu, \
     AluOperations, RegLatchSignals, opcode2operation
-from translation.isa import read_code, Opcode, Argument, AddrMode, Operation
+from src.translation.isa import read_code, Opcode, Argument, AddrMode, Operation
 
 
 class DataPath:
@@ -39,11 +38,12 @@ class DataPath:
     def set_regs_args(self, sel_out: Register = Register.R1, sel_arg_1: Register = Register.R1,
                       sel_arg_2: Register = Register.R1):
         """Метод для выбора набора регистров из регистрового файла для инструкции (3 параметра)"""
-        assert (sel_arg_1, sel_arg_2,
-                sel_out) in self.reg_file.registers, 'You trying latch register that register file doesnt have'
+        assert sel_arg_1 in self.reg_file.registers and \
+               sel_arg_2 in self.reg_file.registers and \
+               sel_out in self.reg_file.registers, 'You trying latch register that register file doesnt have'
 
-        self.reg_file.operand_2 = sel_arg_2
-        self.reg_file.operand_1 = sel_arg_1
+        self.reg_file.argument_2 = sel_arg_2
+        self.reg_file.argument_1 = sel_arg_1
         self.reg_file.out = sel_out
 
     def set_data_alu_args(self, argument: int | None = None):
@@ -96,13 +96,13 @@ class DataPath:
             assert argument is not None, 'You must set the argument if you want to latch its in register'
             source: int = argument
         elif sel_reg is RegLatchSignals.REG:
-            source = self.reg_file[self.reg_file.argument_1]
+            source = self.reg_file.registers[self.reg_file.argument_1]
         elif sel_reg is RegLatchSignals.ALU:
             source = self.data_alu_bus
         else:
             source = self.mem_bus
 
-        self.reg_file[self.reg_file.out] = source
+        self.reg_file.registers[self.reg_file.out] = source
 
     def __rw_restrictions(self):
         """Ограничения на записываемые / читаемые значения - вспомогательная функция"""
@@ -149,7 +149,6 @@ class ControlUnit:
         self.program: list[Operation] = []
         self.step_counter: int = 0
         self._tick: int = 0
-        self.output_buffer: list[int] = []
 
     def set_program(self, program: list[Operation], input_buffer: list[int]):
         """Ввод программы в процессор"""
@@ -157,14 +156,14 @@ class ControlUnit:
         prog_addr: int = 0
 
         # Добавляем специальные переменные (если они должны находиться раньше кода)
-        max_reserved_address: int | None = None
+        max_reserved_address: int = -1
 
-        for var in list(ReservedVariable):
-            if cell_counter > ReservedVariable[var].value > max_reserved_address:
-                max_reserved_address = ReservedVariable[var].value
+        for var in ReservedVariable:
+            if cell_counter > var.value > max_reserved_address:
+                max_reserved_address = var.value
 
-        if max_reserved_address is not None:
-            add_reserved_variables(program, max_reserved_address)
+        if max_reserved_address != -1:
+            program = add_reserved_variables(program, max_reserved_address)
             cell_counter += max_reserved_address + 1
             prog_addr += max_reserved_address + 1
 
@@ -209,25 +208,20 @@ class ControlUnit:
         """Общая часть операции загрузки - вспомогательная функция"""
         if self.step_counter == 1 + offset:
             self.data_path.latch_addr_register(arg)
-            self.latch_step_counter(sel_next=True)
         elif self.step_counter == 2 + offset:
             self.data_path.read()
-            self.latch_step_counter(sel_next=True)
         elif self.step_counter == 3 + offset:
             self.data_path.set_regs_args(sel_out=goal)
             self.data_path.latch_register(RegLatchSignals.MEM)
-            self.latch_step_counter(sel_next=False)
-            self.latch_inc_program_counter()
+        self.latch_step_counter(sel_next=True)
 
     def __stoan_common_part(self, goal: int | None, arg: Register, offset: int):
         if self.step_counter == 1 + offset:
             self.data_path.latch_addr_register(goal)
-            self.latch_step_counter(sel_next=True)
         elif self.step_counter == 2 + offset:
             self.data_path.set_regs_args(sel_arg_2=arg)
             self.data_path.write()
-            self.latch_step_counter(sel_next=False)
-            self.latch_inc_program_counter()
+        self.latch_step_counter(sel_next=True)
 
     def decode_and_execute_instruction(self):
         """Прочитать и исполнить инструкцию (в потактовом режиме)"""
@@ -238,6 +232,8 @@ class ControlUnit:
             self.latch_step_counter(sel_next=True)
         else:
             opcode = self.current_operation.opcode
+            assert opcode != Opcode.DATA, "You are trying to execute data section"
+
             if opcode is Opcode.HLT:
                 raise StopIteration
 
@@ -255,9 +251,10 @@ class ControlUnit:
                             or opcode == Opcode.JNE and not zero \
                             or opcode == Opcode.JG and positive:
                         self.data_path.latch_pc()
+                    else:
+                        self.latch_inc_program_counter()
 
                     self.latch_step_counter(sel_next=False)
-                    self.latch_inc_program_counter()
 
             if opcode in (Opcode.INC, Opcode.DEC):
                 if self.step_counter == 1:
@@ -297,13 +294,12 @@ class ControlUnit:
 
             if opcode is Opcode.CMP:
                 first_arg, second_arg = self.current_operation.args
-
                 if second_arg.mode == AddrMode.REG:
                     self.data_path.set_regs_args(sel_arg_1=first_arg.data, sel_arg_2=second_arg.data)
                     self.data_path.set_data_alu_args()
                 else:
                     self.data_path.set_regs_args(sel_arg_1=first_arg.data)
-                    self.data_path.set_data_alu_args(second_arg)
+                    self.data_path.set_data_alu_args(second_arg.data)
 
                 self.data_path.execute_data_alu(opcode2operation[opcode])
                 self.latch_step_counter(sel_next=False)
@@ -318,6 +314,7 @@ class ControlUnit:
                     else:
                         self.data_path.latch_register(RegLatchSignals.REG)
                         self.latch_step_counter(sel_next=False)
+                        self.latch_inc_program_counter()
                 else:
                     if self.step_counter == 1:
                         self.data_path.set_regs_args(sel_out=first_arg.data)
@@ -331,22 +328,37 @@ class ControlUnit:
                 first_arg, second_arg = self.current_operation.args
 
                 if second_arg.mode == AddrMode.ABS:
-                    self.__load_common_part(first_arg.data, second_arg.data, 0)
+                    if self.step_counter < 4:
+                        self.__load_common_part(first_arg.data, second_arg.data, 0)
+                    else:
+                        self.latch_step_counter(sel_next=False)
+                        self.latch_inc_program_counter()
                 else:
                     if self.step_counter == 1:
                         self.__calc_relative_addr(second_arg.data)
-                        self.latch_step_counter(sel_next=True)
-                    self.__load_common_part(first_arg.data, None, 1)
+                    elif self.step_counter < 5:
+                        self.__load_common_part(first_arg.data, None, 1)
+                    else:
+                        self.latch_step_counter(sel_next=False)
+                        self.latch_inc_program_counter()
 
             if opcode is Opcode.ST:
                 first_arg, second_arg = self.current_operation.args
                 if first_arg.mode == AddrMode.ABS:
-                    self.__stoan_common_part(first_arg.data, second_arg.data, 0)
+                    if self.step_counter < 3:
+                        self.__stoan_common_part(first_arg.data, second_arg.data, 0)
+                    else:
+                        self.latch_step_counter(sel_next=False)
+                        self.latch_inc_program_counter()
                 else:
                     if self.step_counter == 1:
                         self.__calc_relative_addr(first_arg.data)
                         self.latch_step_counter(sel_next=True)
-                    self.__stoan_common_part(None, second_arg.data, 1)
+                    elif self.step_counter < 4:
+                        self.__stoan_common_part(None, second_arg.data, 1)
+                    else:
+                        self.latch_step_counter(sel_next=False)
+                        self.latch_inc_program_counter()
 
     def __repr__(self):
         state = "TICK: {}, PC: {}, ADDR_REG: {}, R1: {}, R2: {}, R3: {}, R4: {}, R5: {}, D_ALU_BUD: {}, A_ALU_BUD: {}, MEM_BUS: {}, Z: {}, P: {}, STEP_COUNTER: {}".format(
@@ -367,19 +379,23 @@ class ControlUnit:
         )
 
         if self.current_operation is not None:
-            operation = self.current_operation
-            opcode = operation.opcode
+            operation = self.data_path.memory[self.data_path.pc]
+            opcode: Opcode = operation.opcode
+            cell_num: int = operation.position
+            arguments: list[tuple[AddrMode, int | Register]] = []
 
-            cell_num = operation.position
-            action = "{} {}".format(cell_num, opcode)
+            for arg in operation.args:
+                arguments.append((arg.mode, arg.data))
+
+            action = "\nCELL_NUMBER: {}, OPCODE: {}, ARGS: {}\n".format(cell_num, opcode, arguments)
         else:
             action = "-"
 
         return "{} {}".format(state, action)
 
 
-def simulation(code: list[Operation], limit: int, input_buffer: list[int]):
-    control_unit = ControlUnit()
+def simulation(code: list[Operation], limit: int, input_buffer: list[int]) -> tuple[str, int, int]:
+    control_unit: ControlUnit = ControlUnit()
     control_unit.set_program(code, input_buffer)
     instr_counter = 0
 
@@ -388,17 +404,16 @@ def simulation(code: list[Operation], limit: int, input_buffer: list[int]):
         while True:
             assert limit > instr_counter, "too long execution, increase limit!"
             control_unit.decode_and_execute_instruction()
+            logging.debug('%s', control_unit)
             if control_unit.step_counter == 0:
                 instr_counter += 1
-            logging.debug('%s', control_unit)
     except StopIteration:
         pass
     output = ''
-    for c in control_unit.output_buffer:
+    for c in control_unit.data_path.output_buffer:
         output += str(c)
         if c in range(0x110000):
-            output += '(' + chr(c) + ')'
-    logging.info('output: %s', output)
+            output += '(' + chr(c) + ')' + ' '
     return output, instr_counter, control_unit.current_tick()
 
 
@@ -407,7 +422,7 @@ def add_reserved_variables(operations: list[Operation], max_reserved_address: in
     for operation in operations:
         operation.position += max_reserved_address + 1
 
-    for pos in range(max_reserved_address):
+    for pos in range(max_reserved_address + 1):
         operation = Operation(Opcode.DATA, pos)
         operation.add_argument(Argument(AddrMode.DATA, 0))
 
@@ -429,12 +444,13 @@ def main(args):
             input_token.append(ord(char))
 
     input_token.append(0)
+    input_token.reverse()
 
-    output, instr_counter, ticks = simulation(memory, 1000, input_token)
+    output, instr_counter, ticks = simulation(memory, 100000, input_token)
 
     print("Output:")
     print(output)
-    print("instr_counter:", instr_counter, "ticks:", ticks)
+    print("\ninstr_counter:", instr_counter, "ticks:", ticks)
     return output
 
 

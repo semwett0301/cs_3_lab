@@ -2,7 +2,7 @@
 
 from enum import Enum
 
-from translation.isa import Opcode
+from src.translation.isa import Opcode
 
 
 class Register(str, Enum):
@@ -45,7 +45,7 @@ opcode2operation = {
     Opcode.MOD: AluOperations.MOD,
     Opcode.CMP: AluOperations.SUB,
     Opcode.INC: AluOperations.ADD,
-    Opcode.DEC: AluOperations.DEC
+    Opcode.DEC: AluOperations.ADD
 }
 
 
@@ -88,12 +88,11 @@ class RegFile:
         self.out: Register = Register.R1
 
 
-
 def resolve_overflow(arg: int) -> int:
     """Отвечает за соблюдение машинного слова"""
-    while arg > 9223372036854775807:
-        arg = -9223372036854775808 + (arg - 9223372036854775808)
-    while arg < -9223372036854775808:
-        arg = 9223372036854775808 - (arg + 9223372036854775808)
+    while arg > 2 ** WORD_LENGTH:
+        arg = -2 ** WORD_LENGTH + (arg - 2 ** WORD_LENGTH)
+    while arg < -2 ** WORD_LENGTH:
+        arg = 2 ** WORD_LENGTH - (arg + 2 ** WORD_LENGTH)
 
     return arg

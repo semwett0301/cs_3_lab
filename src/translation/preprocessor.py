@@ -5,16 +5,19 @@ import re
 
 def remove_comment(line: str) -> str:
     """Удаление комментариев"""
+    line = line.replace("';'", str(ord(';')))
     return re.sub(r';.*', '', line)
 
 
 def remove_extra_spaces(line: str) -> str:
     """Удаление лишних пробелов"""
+    line = line.replace("' '", str(ord(' ')))
     return re.sub(r'\s+', ' ', line)
 
 
 def remove_commas(line: str) -> str:
     """Удаление запятых"""
+    line = line.replace("','", str(ord(',')))
     return line.replace(',', ' ')
 
 
