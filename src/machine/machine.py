@@ -372,18 +372,18 @@ class ControlUnit:
 
         if self.current_operation is not None:
             operation = self.data_path.memory[self.data_path.pc_counter]
-        opcode: Opcode = operation.opcode
-        cell_num: int = operation.position
-        arguments: list[tuple[AddrMode, int | Register]] = []
+            opcode: Opcode = operation.opcode
+            cell_num: int = operation.position
+            arguments: list[tuple[AddrMode, int | Register]] = []
 
-        for arg in operation.args:
-            arguments.append((arg.mode, arg.data))
+            for arg in operation.args:
+                arguments.append((arg.mode, arg.data))
 
             action = f"\nCELL_NUMBER: {cell_num}, OPCODE: {opcode}, ARGS: {arguments}\n"
         else:
             action = "-"
 
-        return "{} {}".format(state, action)
+        return f"{state} {action}"
 
 
 def simulation(code: list[Operation], limit: int, input_buffer: list[int]) -> tuple[str, int, int]:
