@@ -44,4 +44,3 @@ class ValidationTest(unittest.TestCase):
     def test_operand_num(self):
         """Тест операнда числа"""
         self.simple_test_type_error("resources/incorrect/operand_num.asm", "resources/incorrect/operand_num.json")
-
