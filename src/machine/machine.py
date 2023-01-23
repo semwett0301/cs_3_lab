@@ -74,16 +74,6 @@ class DataPath:
         res = resolve_overflow(self.addr_alu.operations[instruction](self.addr_alu.left, self.addr_alu.right))
         self.addr_alu_bus = res
 
-    def __get_addr_argument(self, operand: int | None) -> int:
-        """Получение корректного аргумента адреса - вспомогательная функция"""
-        if operand is not None:
-            result = resolve_overflow(operand)
-        else:
-            result = self.addr_alu_bus
-
-        assert result < AMOUNT_OF_MEMORY, 'Out of memory bounds'
-        return result
-
     def latch_pc(self, operand: int | None = None):
         """Установка значений PC"""
         self.pc_counter = self.__get_addr_argument(operand)
@@ -105,12 +95,6 @@ class DataPath:
             source = self.mem_bus
 
         self.reg_file.registers[self.reg_file.out] = source
-
-    def __rw_restrictions(self):
-        """Ограничения на записываемые / читаемые значения - вспомогательная функция"""
-        assert self.memory[self.addr_reg].opcode == Opcode.DATA, "You are trying to get access to the instruction in read/write operations"
-        assert len(self.memory[self.addr_reg].args) and self.memory[self.addr_reg].args[
-            0].mode == AddrMode.DATA, "You must have 1 data arguments in data cells"
 
     def read(self):
         """Чтение из памяти (вкл. ввод)"""
@@ -137,6 +121,22 @@ class DataPath:
     def get_positive_flag(self) -> bool:
         """Метод получения Positive флага"""
         return self._positive_flag
+
+    def __rw_restrictions(self):
+        """Ограничения на записываемые / читаемые значения - вспомогательная функция"""
+        assert self.memory[self.addr_reg].opcode == Opcode.DATA, "You are trying to get access to the instruction in read/write operations"
+        assert len(self.memory[self.addr_reg].args) and self.memory[self.addr_reg].args[
+            0].mode == AddrMode.DATA, "You must have 1 data arguments in data cells"
+
+    def __get_addr_argument(self, operand: int | None) -> int:
+        """Получение корректного аргумента адреса - вспомогательная функция"""
+        if operand is not None:
+            result = resolve_overflow(operand)
+        else:
+            result = self.addr_alu_bus
+
+        assert result < AMOUNT_OF_MEMORY, 'Out of memory bounds'
+        return result
 
 
 class ControlUnit:
@@ -178,6 +178,7 @@ class ControlUnit:
 
         self.data_path.update_memory(program, input_buffer)
         self.data_path.latch_pc(prog_addr)
+        self.latch_step_counter(sel_next=False)
 
     def tick(self):
         """Счётчик тактов процессора. Вызывается при переходе на следующий такт."""
@@ -197,23 +198,6 @@ class ControlUnit:
     def latch_inc_program_counter(self):
         """Увеличивает счетчик команд на 1 - переходит к следующей инструкции"""
         self.data_path.latch_pc(self.data_path.pc_counter + 1)
-
-    def __calc_relative_addr(self, offset: int):
-        """Вычисление относительного адреса - вспомогательная функция"""
-        self.data_path.set_addr_alu_args(offset)
-        self.data_path.execute_addr_alu(AluOperations.ADD)
-        self.latch_step_counter(sel_next=True)
-
-    def __load_common_part(self, goal: Register, arg: int | None, offset: int = 0):
-        """Общая часть операции загрузки - вспомогательная функция"""
-        if self.step_counter == 1 + offset:
-            self.data_path.latch_addr_register(arg)
-        elif self.step_counter == 2 + offset:
-            self.data_path.read()
-        elif self.step_counter == 3 + offset:
-            self.data_path.set_regs_args(sel_out=goal)
-            self.data_path.latch_register(RegLatchSignals.MEM)
-        self.latch_step_counter(sel_next=True)
 
     def __stoan_common_part(self, goal: int | None, arg: Register, offset: int):
         if self.step_counter == 1 + offset:
@@ -389,6 +373,23 @@ class ControlUnit:
 
         return f"{state} {action}"
 
+    def __calc_relative_addr(self, offset: int):
+        """Вычисление относительного адреса - вспомогательная функция"""
+        self.data_path.set_addr_alu_args(offset)
+        self.data_path.execute_addr_alu(AluOperations.ADD)
+        self.latch_step_counter(sel_next=True)
+
+    def __load_common_part(self, goal: Register, arg: int | None, offset: int = 0):
+        """Общая часть операции загрузки - вспомогательная функция"""
+        if self.step_counter == 1 + offset:
+            self.data_path.latch_addr_register(arg)
+        elif self.step_counter == 2 + offset:
+            self.data_path.read()
+        elif self.step_counter == 3 + offset:
+            self.data_path.set_regs_args(sel_out=goal)
+            self.data_path.latch_register(RegLatchSignals.MEM)
+        self.latch_step_counter(sel_next=True)
+
 
 def simulation(code: list[Operation], limit: int, input_buffer: list[int]) -> tuple[str, int, int]:
     """Симуляция программы"""
@@ -405,7 +406,10 @@ def simulation(code: list[Operation], limit: int, input_buffer: list[int]) -> tu
             if control_unit.step_counter == 0:
                 instr_counter += 1
     except StopIteration:
-        pass
+        logging.warning('Program has been stopped')
+    except IndexError:
+        logging.warning('Input buffer came to the end')
+
     output = ''
     for char in control_unit.data_path.output_buffer:
         output += str(char)
@@ -440,7 +444,6 @@ def main(args):
         for char in input_text:
             input_token.append(ord(char))
 
-    input_token.append(0)
     input_token.reverse()
 
     output, instr_counter, ticks = simulation(memory, 100000, input_token)

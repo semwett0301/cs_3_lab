@@ -24,32 +24,8 @@
         ]
     },
     {
-        "opcode": "cmp",
-        "position": 2,
-        "args": [
-            {
-                "data": "r2",
-                "mode": "register"
-            },
-            {
-                "data": 0,
-                "mode": "data"
-            }
-        ]
-    },
-    {
-        "opcode": "je",
-        "position": 3,
-        "args": [
-            {
-                "data": 3,
-                "mode": "relative"
-            }
-        ]
-    },
-    {
         "opcode": "st",
-        "position": 4,
+        "position": 2,
         "args": [
             {
                 "data": 1,
@@ -63,17 +39,12 @@
     },
     {
         "opcode": "jmp",
-        "position": 5,
+        "position": 3,
         "args": [
             {
-                "data": -4,
+                "data": -2,
                 "mode": "relative"
             }
         ]
-    },
-    {
-        "opcode": "hlt",
-        "position": 6,
-        "args": []
     }
 ]

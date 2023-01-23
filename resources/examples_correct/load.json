@@ -1,0 +1,73 @@
+[
+    {
+        "opcode": "jmp",
+        "position": 0,
+        "args": [
+            {
+                "data": 2,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "data",
+        "position": 1,
+        "args": [
+            {
+                "data": 24,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "mov",
+        "position": 2,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": 2,
+                "mode": "data"
+            }
+        ]
+    },
+    {
+        "opcode": "ld",
+        "position": 3,
+        "args": [
+            {
+                "data": "r2",
+                "mode": "register"
+            },
+            {
+                "data": -2,
+                "mode": "relative"
+            }
+        ]
+    },
+    {
+        "opcode": "add",
+        "position": 4,
+        "args": [
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": "r1",
+                "mode": "register"
+            },
+            {
+                "data": "r2",
+                "mode": "register"
+            }
+        ]
+    },
+    {
+        "opcode": "hlt",
+        "position": 5,
+        "args": []
+    }
+]

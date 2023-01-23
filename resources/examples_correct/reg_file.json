@@ -10,41 +10,50 @@
         ]
     },
     {
-        "opcode": "ld",
+        "opcode": "mov",
         "position": 1,
         "args": [
             {
-                "data": "r2",
+                "data": "r1",
                 "mode": "register"
             },
             {
-                "data": 0,
-                "mode": "absolute"
+                "data": 5,
+                "mode": "data"
             }
         ]
     },
     {
-        "opcode": "st",
+        "opcode": "mov",
         "position": 2,
         "args": [
             {
-                "data": 1,
-                "mode": "absolute"
+                "data": "r3",
+                "mode": "register"
             },
             {
-                "data": "r2",
+                "data": "r1",
                 "mode": "register"
             }
         ]
     },
     {
-        "opcode": "jmp",
+        "opcode": "mov",
         "position": 3,
         "args": [
             {
-                "data": -2,
-                "mode": "relative"
+                "data": "r4",
+                "mode": "register"
+            },
+            {
+                "data": "r3",
+                "mode": "register"
             }
         ]
+    },
+    {
+        "opcode": "hlt",
+        "position": 4,
+        "args": []
     }
 ]
