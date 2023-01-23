@@ -1,9 +1,9 @@
 """
 Интеграционные тесты для процессора и транслятора
 """
-import contextlib
 import os
 import unittest
+
 from src.machine import machine
 from src.translation import translator
 
@@ -42,18 +42,18 @@ class IntegrationTest(unittest.TestCase):
         with self.assertLogs('', level='DEBUG') as logs:
             self.run_machine("resources/source/cat.asm", "resources/result/prob5.json")
 
-        file = open("tmp.txt", "w")
-        for line in logs.output:
-            file.write(line)
+        with open("tmp.txt", "w", encoding="utf-8") as file:
+            for line in logs.output:
+                file.write(line)
 
-        file = open("tmp.txt", "r")
-        current_logs: list[str] = []
+        with open("tmp.txt", "r", encoding="utf-8") as file:
+            current_logs: list[str] = []
 
-        for log in file.read().split('\n'):
-            current_logs.append(str(log))
-            print(log)
+            for log in file.read().split('\n'):
+                current_logs.append(str(log))
+                print(log)
 
-        file.close()
+            file.close()
         os.remove("tmp.txt")
 
         expect_logs = [

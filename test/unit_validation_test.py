@@ -4,7 +4,7 @@ Unit-тесты для транслятора
 
 import unittest
 
-from src.translation import isa, translator
+from src.translation import translator
 
 
 class ValidationTest(unittest.TestCase):
