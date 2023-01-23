@@ -145,7 +145,7 @@ class ControlUnit:
        """
 
     def __init__(self):
-        self.data_path: DataPath | None = None
+        self.data_path: DataPath = DataPath()
         self.current_operation: Operation | None = None
         self.program: list[Operation] = []
         self.step_counter: int = 0
@@ -176,8 +176,6 @@ class ControlUnit:
             program.append(operation)
             cell_counter += 1
 
-        if self.data_path is None:
-            self.data_path = DataPath()
         self.data_path.update_memory(program, input_buffer)
         self.data_path.latch_pc(prog_addr)
 
