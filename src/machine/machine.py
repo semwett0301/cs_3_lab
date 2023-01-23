@@ -124,7 +124,8 @@ class DataPath:
 
     def __rw_restrictions(self):
         """Ограничения на записываемые / читаемые значения - вспомогательная функция"""
-        assert self.memory[self.addr_bus].opcode == Opcode.DATA, "You are trying to get access to the instruction in read/write operations"
+        assert self.memory[
+                   self.addr_bus].opcode == Opcode.DATA, "You are trying to get access to the instruction in read/write operations"
         assert len(self.memory[self.addr_bus].args) and self.memory[self.addr_bus].args[
             0].mode == AddrMode.DATA, "You must have 1 data arguments in data cells"
 
@@ -150,7 +151,6 @@ class ControlUnit:
         self.program: list[Operation] = []
         self.step_counter: int = 0
         self._tick: int = 0
-
 
     def set_program(self, program: list[Operation], input_buffer: list[int]):
         """Ввод программы в процессор"""
