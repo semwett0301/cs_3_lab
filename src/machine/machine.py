@@ -364,7 +364,7 @@ class ControlUnit:
                             self.latch_step_counter(sel_next=False)
                             self.latch_inc_program_counter()
         except ValueError as error:
-            raise ValueError(f'You use incorrect argument in command {self.current_operation.opcode}')
+            raise ValueError(f'You use incorrect argument in command {self.current_operation.opcode}') from error
 
     def __repr__(self):
         state = f"TICK: {self._tick}, PC: {self.data_path.pc_counter}, ADDR_REG: {self.data_path.addr_reg}, " \
