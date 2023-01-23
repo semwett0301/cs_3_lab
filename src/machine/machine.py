@@ -204,10 +204,11 @@ class ControlUnit:
         """Прочитать и исполнить инструкцию (в потактовом режиме)"""
         self.tick()
         try:
-            if self.current_operation is None or self.step_counter == 0:
+            if self.current_operation != self.data_path.memory[self.data_path.pc_counter]:
+                self.latch_step_counter(sel_next=False)
                 self.current_operation = self.data_path.memory[self.data_path.pc_counter]
-                self.latch_step_counter(sel_next=True)
             else:
+                self.latch_step_counter(sel_next=True)
                 opcode = self.current_operation.opcode
                 assert opcode != Opcode.DATA, "You are trying to execute data section"
 
@@ -231,8 +232,6 @@ class ControlUnit:
                         else:
                             self.latch_inc_program_counter()
 
-                        self.latch_step_counter(sel_next=False)
-
                 if opcode in (Opcode.INC, Opcode.DEC):
                     if self.step_counter == 1:
                         reg: Register = Register(self.current_operation.args[0].data)
@@ -244,10 +243,8 @@ class ControlUnit:
                             self.data_path.set_data_alu_args(-1)
 
                         self.data_path.execute_data_alu(opcode2operation[opcode])
-                        self.latch_step_counter(sel_next=True)
                     else:
                         self.data_path.latch_register(RegLatchSignals.ALU)
-                        self.latch_step_counter(sel_next=False)
                         self.latch_inc_program_counter()
 
                 if opcode in (Opcode.ADD, Opcode.SUB, Opcode.DIV, Opcode.MOD, Opcode.MUL):
@@ -265,10 +262,8 @@ class ControlUnit:
                             self.data_path.set_data_alu_args(int(third_arg.data))
 
                         self.data_path.execute_data_alu(opcode2operation[opcode])
-                        self.latch_step_counter(sel_next=True)
                     else:
                         self.data_path.latch_register(RegLatchSignals.ALU)
-                        self.latch_step_counter(sel_next=False)
                         self.latch_inc_program_counter()
 
                 if opcode is Opcode.CMP:
@@ -282,7 +277,6 @@ class ControlUnit:
                         self.data_path.set_data_alu_args(int(second_arg.data))
 
                     self.data_path.execute_data_alu(opcode2operation[opcode])
-                    self.latch_step_counter(sel_next=False)
                     self.latch_inc_program_counter()
 
                 if opcode is Opcode.MOV:
@@ -291,18 +285,14 @@ class ControlUnit:
                         if self.step_counter == 1:
                             self.data_path.set_regs_args(sel_out=Register(first_arg.data),
                                                          sel_arg_1=Register(second_arg.data))
-                            self.latch_step_counter(sel_next=True)
                         else:
                             self.data_path.latch_register(RegLatchSignals.REG)
-                            self.latch_step_counter(sel_next=False)
                             self.latch_inc_program_counter()
                     else:
                         if self.step_counter == 1:
                             self.data_path.set_regs_args(sel_out=Register(first_arg.data))
-                            self.latch_step_counter(sel_next=True)
                         else:
                             self.data_path.latch_register(RegLatchSignals.ARG, int(second_arg.data))
-                            self.latch_step_counter(sel_next=False)
                             self.latch_inc_program_counter()
 
                 if opcode is Opcode.LD:
@@ -310,27 +300,20 @@ class ControlUnit:
 
                     if second_arg.mode == AddrMode.ABS:
                         self.__load_common_part(Register(first_arg.data), int(second_arg.data), 0)
-                        if self.step_counter < 2:
-                            self.latch_step_counter(sel_next=True)
-                        else:
-                            self.latch_step_counter(sel_next=False)
+                        if self.step_counter >= 2:
                             self.latch_inc_program_counter()
                     else:
                         if self.step_counter == 1:
                             self.__calc_relative_addr(int(second_arg.data))
                         else:
                             self.__load_common_part(Register(first_arg.data), None, 1)
-                            if self.step_counter < 3:
-                                self.latch_step_counter(sel_next=True)
-                            else:
-                                self.latch_step_counter(sel_next=False)
+                            if self.step_counter >= 3:
                                 self.latch_inc_program_counter()
 
                 if opcode is Opcode.ST:
                     first_arg, second_arg = self.current_operation.args
                     if first_arg.mode == AddrMode.ABS:
                         self.__stoan_common_part(int(first_arg.data), Register(second_arg.data))
-                        self.latch_step_counter(sel_next=False)
                         self.latch_inc_program_counter()
                     else:
                         if self.step_counter == 1:
@@ -338,7 +321,6 @@ class ControlUnit:
                             self.latch_step_counter(sel_next=True)
                         else:
                             self.__stoan_common_part(None, Register(second_arg.data))
-                            self.latch_step_counter(sel_next=False)
                             self.latch_inc_program_counter()
         except ValueError as error:
             raise ValueError(f'You use incorrect argument in command {self.current_operation}') from error
@@ -370,7 +352,6 @@ class ControlUnit:
         """Вычисление относительного адреса - вспомогательная функция"""
         self.data_path.set_addr_alu_args(offset)
         self.data_path.execute_addr_alu(AluOperations.ADD)
-        self.latch_step_counter(sel_next=True)
 
     def __stoan_common_part(self, goal: int | None, arg: Register):
         self.data_path.latch_addr_bus(goal)
