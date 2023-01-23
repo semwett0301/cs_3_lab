@@ -253,7 +253,7 @@ number ::= [-2^64; 2^64 - 1]
 
 ## Модель процессора
 ### Схема DataPath и ControlUnit
-![Схема DataPath и ControlUnit](resourses/scheme.png)
+![Схема DataPath и ControlUnit](scheme.png)
 ### DataPath
 ### ControlUnit
 
