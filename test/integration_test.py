@@ -7,9 +7,6 @@ import src.machine.machine as machine
 import src.translation.translator as translator
 
 
-
-
-
 class IntegrationTest(unittest.TestCase):
     """
     Unit-тесты для процессора

@@ -12,6 +12,7 @@ class Register(str, Enum):
     R4 = 'r4'
     R5 = 'r5'
 
+
 class Opcode(str, Enum):
     """Коды операций"""
 

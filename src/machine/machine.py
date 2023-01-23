@@ -106,8 +106,7 @@ class DataPath:
 
     def __rw_restrictions(self):
         """Ограничения на записываемые / читаемые значения - вспомогательная функция"""
-        assert self.memory[
-                   self.addr_reg].opcode == Opcode.DATA, "You are trying to get access to the instruction in read/write operations"
+        assert self.memory[self.addr_reg].opcode == Opcode.DATA, "You are trying to get access to the instruction in read/write operations"
         assert len(self.memory[self.addr_reg].args) and self.memory[self.addr_reg].args[
             0].mode == AddrMode.DATA, "You must have 1 data arguments in data cells"
 

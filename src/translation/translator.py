@@ -34,7 +34,6 @@ def decode_absolute(operation: Operation, arg: str) -> Operation:
     assert operation.is_corr_to_type(OperationType.MEM), 'You cant access to memory not in ld and st command'
     address: int
 
-
     if ReservedVariable[arg] is not None:
         address = ReservedVariable[arg].value
     else:
