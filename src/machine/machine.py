@@ -297,10 +297,10 @@ class ControlUnit:
             if opcode is Opcode.CMP:
                 first_arg, second_arg = self.current_operation.args
                 if second_arg.mode == AddrMode.REG:
-                    self.data_path.set_regs_args(sel_arg_1=first_arg.data, sel_arg_2=second_arg.data)
+                    self.data_path.set_regs_args(sel_arg_1=Register(first_arg.data), sel_arg_2=Register(second_arg.data))
                     self.data_path.set_data_alu_args()
                 else:
-                    self.data_path.set_regs_args(sel_arg_1=first_arg.data)
+                    self.data_path.set_regs_args(sel_arg_1=Register(first_arg.data))
                     self.data_path.set_data_alu_args(second_arg.data)
 
                 self.data_path.execute_data_alu(opcode2operation[opcode])
@@ -311,7 +311,7 @@ class ControlUnit:
                 first_arg, second_arg = self.current_operation.args
                 if second_arg.mode == AddrMode.REG:
                     if self.step_counter == 1:
-                        self.data_path.set_regs_args(sel_out=first_arg.data, sel_arg_1=second_arg.data)
+                        self.data_path.set_regs_args(sel_out=Register(first_arg.data), sel_arg_1=Register(second_arg.data))
                         self.latch_step_counter(sel_next=True)
                     else:
                         self.data_path.latch_register(RegLatchSignals.REG)
@@ -319,7 +319,7 @@ class ControlUnit:
                         self.latch_inc_program_counter()
                 else:
                     if self.step_counter == 1:
-                        self.data_path.set_regs_args(sel_out=first_arg.data)
+                        self.data_path.set_regs_args(sel_out=Register(first_arg.data))
                         self.latch_step_counter(sel_next=True)
                     else:
                         self.data_path.latch_register(RegLatchSignals.ARG, second_arg.data)
