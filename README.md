@@ -6,42 +6,51 @@
 ## Язык программирования
 
 ``` ebnf
-program ::= line "\n" program
+program ::= <section_data> <section_text> | <section_text> <section_data> | <section_text>
 
-line ::= label
-       | variable
-       | comment
-       | command
-       | section
+<section_data> ::= "section .data\n" <declaratione>*
 
-label ::= "." name ":"
+<section_text> ::= "section .text\n" <instruction>*
 
-variable ::= name ":"
+<declaration> ::= <comment>* "\t"* (<variable> | <value>) "\n" <comment>*
 
-comment ::= ; <any sequence>
+<instruction> ::= <comment>* "\t"* (<label> | <command>) "\n" <comment>*
 
-command ::= "\t" operation_2_args " " operand ", " operand |
-            "\t" operation_1_arg " " operand |
-            "\t" operation_0_args |
+<label> ::= "." <name> ":"
 
-section ::= "section ." section_name
+<variable> ::= <name> ":"
 
-section_name ::= "text" | "data"
+<name> ::= [a-zA-Z]+
 
-operation_3_args ::= "ADD" | "SUB" | "DIV" | "MOD" | "MUL"
+<value> ::= <number> | <char>
 
-operation_2_args ::= "CMP" | "LD" | "ST" | "MOV"
+<comment> ::= ; <any sequence>
 
-operation_1_arg ::= "JMP" | "JE" | "JNE" | "JG" | "INC" | "DEC"
+<command> ::= <operation_3_args> | <operation_2_args> | <operation_1_arg> | <operation_0_args>
+
+operation_3_args ::= ("ADD" | "SUB" | "DIV" | "MOD" | "MUL") " " (<register_register_value> | <register_register_register>)
+
+<register_register_value> ::= <reg> ", " <reg> ", " <number | char>
+
+<register_register_register> ::= <reg> ", " <reg> ", " <reg>
+
+operation_2_args ::= ("CMP" | "LD" | "ST" | "MOV") " " (<register_register> | <register_var_name> | <var_name_register>)
+
+<register_register> ::= <reg> ", " <reg>
+
+<register_var_name> ::= <reg> ", " "(" <name> ")"
+
+<var_name_register> ::=  "(" <name> ")" ", " <reg>
+
+operation_1_arg ::= ("JMP" | "JE" | "JNE" | "JG" | "INC" | "DEC") " " (<label> | <reg>)
 
 operation_0_args ::= "HLT"
 
-operand ::= %r1 | .label | #var | (var) | char | number    ; var here is variable in memory, 
-                                                           ; # and () - address mode
+<reg=> ::= "r1" | "r2" | "r3" | "r4" | "r5" 
 
-char ::= [a-z]
+<char> ::= "<any ASCII symbol>"
           
-number ::= [-2^64; 2^64 - 1]
+<number> ::= [-2^64; 2^64 - 1]
 
 ```
 
