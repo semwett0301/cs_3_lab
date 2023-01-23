@@ -285,7 +285,7 @@ class ControlUnit:
                         else:
                             self.data_path.set_regs_args(sel_out=Register(first_arg.data),
                                                          sel_arg_1=Register(second_arg.data))
-                            self.data_path.set_data_alu_args(int(third_arg) if third_arg is not None else None)
+                            self.data_path.set_data_alu_args(third_arg)
 
                         self.data_path.execute_data_alu(opcode2operation[opcode])
                         self.latch_step_counter(sel_next=True)
