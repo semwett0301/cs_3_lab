@@ -40,7 +40,7 @@ def decode_absolute(operation: Operation, arg: str) -> Operation:
         try:
             address = int(arg)
         except ValueError as addr_error:
-            raise ValueError("You must use int with absolute address mode") from addr_error
+            raise TypeError("You must use int with absolute address mode") from addr_error
 
     operation.add_argument(Argument(AddrMode.ABS, address))
     return operation
@@ -78,7 +78,7 @@ def decode_int(operation: Operation, arg: str) -> Operation:
         operation.add_argument(Argument(AddrMode.DATA, value))
         return operation
     except ValueError as char_error:
-        raise ValueError("You must write chars in single quotes") from char_error
+        raise TypeError("You must write chars in single quotes") from char_error
 
 
 def check_operation_type(operation: Operation):
@@ -172,8 +172,9 @@ def resolve_variable(operation: Operation, variables: dict[str, int]) -> Operati
     """Вставка значений переменных в команды"""
     if operation.is_corr_to_type(OperationType.MEM):
         for arg in operation.args:
-            if arg.mode is AddrMode.REL and isinstance(arg.data, str) and arg.data in variables:
-                arg.data = variables[arg.data] - operation.position
+            if arg.mode is AddrMode.REL and isinstance(arg.data, str):
+                if arg.data in variables:
+                    arg.data = variables[arg.data] - operation.position
                 assert not isinstance(arg.data, str), 'You use undefined variable'
 
     return operation
