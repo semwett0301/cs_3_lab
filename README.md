@@ -286,7 +286,7 @@ lab3:
     - python3-coverage run -m pytest --verbose
     - find . -type f -name "*.py" | xargs -t python3-coverage report
     - find . -type f -name "*.py" | xargs -t pep8 --ignore=E501
-    - find . -type f -name "*.py" | xargs -t pylint --disable=C0301,R0903,R1702,R0912,R0914,R0915,R0916,R0902
+    - find . -type f -name "*.py" | xargs -t pylint --disable=C0301,R0903,R1702,R0912,R0915,R0916,R0902
     - find . -type f -name "*.py" | xargs -t mypy --check-untyped-defs --explicit-package-bases --namespace-packages
 ```
 
@@ -295,7 +295,7 @@ lab3:
 - `python3-coverage` -- формирование отчёта об уровне покрытия исходного кода.
 - `pytest` -- утилита для запуска тестов.
 - `pep8` -- утилита для проверки форматирования кода. `E501` (длина строк) отключено.
-- `pylint` -- утилита для проверки качества кода. Некоторые правила отключены в отдельных модулях с целью упрощения кода.
+- `pylint` -- утилита для проверки качества кода. Некоторые правила отключены с целью упрощения кода.
 - `mypy` -- утилита для проверки корректности статической типизации.
   - `--check-untyped-defs` -- дополнительная проверка.
   - `--explicit-package-bases` и `--namespace-packages` -- помогает правильно искать импортированные модули.
