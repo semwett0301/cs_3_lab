@@ -6,6 +6,7 @@ import unittest
 from src.machine import machine
 from src.translation import translator
 
+
 class IntegrationTest(unittest.TestCase):
     """
     Unit-тесты для процессора
