@@ -1,9 +1,9 @@
-# Assembler. Транслятор и модель
+# Assembler. Translator and model
 
-- Мокров Семён Андреевич, гр. Р33121
+- Mokrov Simon Andreevich, gr. P33121
 - `asm | risc | neum | hw | tick | struct | stream | mem | prob5`
 
-## Язык программирования
+## Programming language
 
 ``` ebnf
 program ::= <section_data> <section_text> | <section_text> <section_data> | <section_text>
@@ -54,162 +54,156 @@ operation_0_args ::= "HLT"
 
 ```
 
-Поддерживаемые аргументы:
+Supported arguments:
 
-- **регистр** - `%r1`. Всего регистров 5: r1, r2, r3, r4, r5.
-- **объявленная метка** - `.<label>:`.
-- **адрес памяти** - `#1`. Рекомендуется использовать **только**
-  с зарезервированными переменными. **Нельзя** использовать с именами объявленных переменных
-- **объявленная переменная** - `(NAME)`. Переменная обязательно должна находиться в скобках.
-- **символ** - `'a'`. Транслируется в код ASCII. **Нельзя** указывать несколько символов сразу (строки не поддерживаются). Символ обязательно должен находиться в одинарных кавычках
-- **целое число** в диапазоне [-2^64 ; 2^64 - 1].
-
-
-Виды операций:
-
-- **регистровая** операция - может использовать в качестве операндов регистры или значения: символ, число. Первые n-1 операндов должны быть регистрами (n - кол-во операндов, если n = 1, то операнд должен быть регистром).
-- операция **перехода** - может поддерживать метки в качестве операндов. Должна иметь 1 операнд-метку.
-- операция **по работе с памятью** - может поддерживать адреса и имена переменных в качестве операндов. Один из операндов должен быть регистром
-- часть операций может соблюдать ограничения, иметь свои ограничения на операнды или может не иметь операндов вовсе (см. операции)
+- **register** - `%r1'. There are 5 registers in total: r1, r2, r3, r4, r5.
+- **declared label** - `.<label>:`.
+- **memory address** - `#1'. It is recommended to use **only**
+with reserved variables. **Cannot** be used with the names of declared variables
+- **declared variable** - `(NAME)`. The variable must be in parentheses.
+- **symbol** - `a". Translated into ASCII code. **You cannot** specify multiple characters at once (strings are not supported). The symbol must be in single quotes
+- **integer** in the range [-2^64 ; 2^64 - 1].
 
 
-Код находится в `section .text` и выполняется последовательно. Операции:
+Types of operations:
 
-- `ADD <arg1> <arg2> <arg3>` -- прибавить ко второму аргументу третий, результат поместить в первый. *Регистровая операция*.
-- `SUB <arg1> <arg2> <arg3>` -- вычесть из второго аргумента третий, результат поместить в первый. *Регистровая операция*
-- `DIV <arg1> <arg2> <arg3>` -- получить целую часть от деления второго аргумента на третий, результат поместить в первый. *Регистровая операция*
-- `MOD <arg1> <arg2> <arg3>` -- получить остаток от деления второго аргумента на третий, результат поместить в первый. *Регистровая операция*
-- `MUL <arg1> <arg2> <arg3>` -- получить произведение второго аргумента на третий, результат поместить в первый. *Регистровая операция*
-- `MOV <arg1> <arg2>` -- скопировать значение из второго аргумента в первый. *Регистровая операция*
-- `CMP <arg1> <arg2>` -- получить результат сравнения второго аргумента с первым (0, если аргументы равны). *Регистровая операция*
-- `LD <arg1> <arg2>` -- загрузить в 1 операнд 2. 2 операндом может выступать только адрес или имя ячейки, 1 операндом может выступать только регистр. *Регистровая операция* и операция *по работе с памятью*
-- `ST <arg1> <arg2>` -- загрузить в 2 операнд 1. 1 операндом может выступать только адрес или имя ячейки, 2 операндом может выступать только регистр. *Регистровая операция* (нарушает общие правила) и операция *по работе с памятью*
-- `INC <arg>` -- инкрементировать операнд (+1). Может иметь в качестве операнда только регистр. *Регистровая операция*
-- `DEC <arg>` -- декрементировать (-1) операнд. Может иметь в качестве операнда только регистр. *Регистровая операция*
-- `JE <label>` -- если результат предыдущей операции равен 0, перейти на аргумент-метку. *Операция перехода*
-- `JNE <label>` -- если результат предыдущей операции не равен 0, перейти на аргумент-метку. *Операция перехода*
-- `JG <label>` -- если результат предыдущей операции больше 0, перейти на аргумент-метку. *Операция перехода*
-- `JMP <label>` -- безусловный переход на аргумент-метку. *Операция перехода*
-- `HLT` -- завершить выполнение программы
-
-Переменные объявляются в `section .data` и имеют следующий синтаксис - `<VAR>: <value>`:
-- `<VAR>` - имя переменной. При обращении к нему необходимо учитывать регистр. Имя не должно иметь пробелов и должно заканчиваться символом `:`
-- `<value>` - значение переменной. Может быть числом или символом (`'a'`). Правила записи те же, что и для аргументов.
-- Одна переменная должна располагаться на 1 строчке.
-- Не имеют фиксированного адреса  памяти.
-
-Дополнительные конструкции:
-
-- `; <any sequence not containing ';'>` - комментарий
-- `section .text` - объявление секции кода
-- `section .data` - объявление секции данных
-- `.<label>:` - метки для переходов / названия переменных. Могут быть объявлены только в `section .text`. Должны располагаться на отдельной строчке
-
-Зарезервированные переменные:
-  - Имеют фиксированный адрес в памяти
-  - Возможно обратиться только напрямую через адрес в памяти (#STDIN)
-  - При трансляции превращаются в их адрес
-  - Виды:
-    - ```STDIN``` - при чтении переменной происходит ввод данных. В переменную нельзя записывать.
-    - ``STDOUT`` - при записи в переменную происходит вывод данных. Из переменной нельзя читать.
+- **register** operation - can use registers or values as operands: symbol, number. The first n-1 operands must be registers (n is the number of operands, if n = 1, then the operand must be a register).
+- **transition** operation - can support labels as operands. Must have 1 operand label.
+- memory operation *** - can support addresses and variable names as operands. One of the operands must be a register
+- some operations may comply with restrictions, have their own restrictions on operands, or may not have operands at all (see operations)
 
 
-Примечания:
+The code is in the `section .text` and executed sequentially. Operations:
 
-- Результаты операций с 3 аргументами (если он есть) помещаются в 1 аргумент
-- Должен присутствовать `section .text` - тело программы
-- Должна присутствовать метка `.start:` в `section .text` - точка входа в программу
-- При обращении к необъявленной метке или переменной возникнет ошибка.
-- Все составляющие языка **регистрозависимы**
+- `ADD <arg1> <arg2> <arg3>` -- add a third argument to the second, put the result in the first. *Register operation*.
+- `SUB <arg1> <arg2> <arg3>` -- subtract the third argument from the second, put the result in the first. *Register operation*
+- `DIV <arg1> <arg2> <arg3>` -- get the whole part from dividing the second argument by the third, put the result in the first. *Register operation*
+- `MOD <arg1> <arg2> <arg3>` -- get the remainder from dividing the second argument by the third, put the result in the first. *Register operation*
+- `MUL <arg1> <arg2> <arg3>` -- get the product of the second argument by the third, put the result in the first. *Register operation*
+- `MOV <arg1> <arg2>` -- copy the value from the second argument to the first. *Register operation*
+- `CMP <arg1> <arg2>` -- get the result of comparing the second argument with the first (0 if the arguments are equal). *Register operation*
+- `LD <arg1> <arg2>` -- load 2 into 1 operand. 2 the operand can only be the address or name of the cell, 1 the operand can only be a register. *Register operation* and memory operation **
+- 'ST <arg1> <arg2>` -- load into 2 operand 1. 1 the operand can only be the address or name of the cell, 2 the operand can only be the register. *Register operation* (violates general rules) and operation * for working with memory*
+- `INC <arg>` -- increment the operand (+1). It can have only a register as an operand. *Register operation*
 
-## Организация памяти
-- Есть возможность объявления переменных в `section .data`
+Variables are declared in `section .data` and have the following syntax - `<VAR>: <value>`:
+- `<VAR>` - variable name. When accessing it, it is necessary to take into account the case. The name must not have spaces and must end with the character `:`
+- `<value>` - the value of the variable. It can be a number or a symbol (`a"). The writing rules are the same as for arguments.
+- One variable should be located on 1 line.
+- Do not have a fixed memory address.
 
-Модель памяти процессора:
+Additional designs:
 
-- Память данных. Машинное слово -- 64 бит, знаковое. Реализуется списком инструкций процессора - `Operation`. Обращение к памяти занимает 1 такт.
+- `; <any sequence not containing';'>` - comment
+- `section .text` - declaration of the code section
+- `section .data` - declaration of the data section
+- `.<label>:` - labels for transitions / variable names. Can only be declared in `section .text`. Must be located on a separate line
 
-Типы адресации:
+Reserved variables:
+- Have a fixed address in memory
+- It is possible to access only directly through the address in memory (#STDIN)
+- When translated, they turn into their address
+- Types:
+- ``STDIN`` - when reading a variable, data is entered. You cannot write to a variable.
+- `STDOUT` - when writing to a variable, data is output. You cannot read from a variable.
 
-- Прямая регистровая: операндом инструкции является регистр.
-- Непосредственная загрузка: операндом является константа, подаваемая как один из аргументов.
-- Прямая абсолютная: операндом инструкции является адрес памяти
-- Прямая относительная: операндом инструкции является смещение относительно текущей инструкции
+
+Notes:
+
+- The results of operations with 3 arguments (if any) are placed in 1 argument
+- Must be present `section.text` - program body
+- The label `.start:` must be present in the `section.text` - the entry point to the program
+- An error will occur when accessing an undeclared label or variable.
+- All components of the language **are case-sensitive**
+
+## Memory organization
+- It is possible to declare variables in `section .data`
+
+Processor Memory Model:
+
+- Data memory. The machine word is 64 bits, signed. Implemented by a list of processor instructions - `Operation'. Accessing memory takes 1 clock cycle.
+
+Types of addressing:
+
+- - Direct register: The operand of the instruction is a register.
+- Direct loading: The operand is a constant supplied as one of the arguments.
+- Direct absolute: the operand of the instruction is the memory address
+- Direct relative: the operand of an instruction is an offset relative to the current instruction
 
 
-## Система команд
+## Command system
 
-### Особенности процессора:
+### Processor Features:
 
-- **Машинное слово** -- 64 бита, знаковое.
-- **Память:**
-    - адресуется через регистры `pс_counter` и через шину данных `addr_bus`;
-    - может быть записана из регистрового файла;
-    - может быть прочитана в регистровый файл или в `Instruction Decoder`;
-    - имеет зарезервированные ячейки для подключения потоков ввода-вывода (задаются через конфигурацию).
-- **Регистровый файл**:
-    - состоит из регистров общего назначения размером с машинное слово
-    - регистры расположены последовательно
-    - всего регистров 5: *r1, r2, r3, r4, r5* (количество и названия регистров можно изменить в конфигурации)
-    - имеет два выхода и 1 вход: `argument_1`, `argument_2`, `out`. Устанавливаются при помощи сигналов Instruction Decoder.
-    - регистр, подключенный к `out`, может быть записан из памяти, АЛУ (связанного с ним), регистра, подключенного к `argument_1` или операндом из `Instruction Decoder`
-    - регистр, подключенный к `argument_1` может быть прочитан в левый вход к АЛУ (подключенному к регистровому файлу) или в регистр, подключенный к `out`
-    - регистр, подключенный к `argument_2` может быть прочитан в память или на правый вход АЛУ (подключенного к регистровому файлу)
-- **АЛУ, соединенный с регистровым файлом**:
-  - имеет два входа и 1 выход
-  - прозводит арифметические операции с регистрами общего назначения и аргументами из Instruction Decoder
-  - управляется сигналами из Instruction Decoder
-  - устанавливает флаг равенства нулю и флаг положительного результата по результату вычисленной операции
-  - умеет складывать, вычитать, умножать, делить нацело, получать остаток от деления
-  - результат вычислений записывается в регистр общего назначения
-- **АЛУ, соединенный с регистровым файлом**:
-  - имеет два входа и 1 выход
-  - прозводит арифметические операции с `pc_couner` и аргументами из Instruction Decoder
-  - управляется сигналами из Instruction Decoder
-  - умеет складывать, вычитать, умножать, делить нацело, получать остаток от деления
-  - результат вычислений записывается в `pc_counter` или передается на шину `addr_bus`
-  - используется для вычисления смещения
-- **step_counter** -- счетчик шагов:
-  - отвечает за хранения номера шага текущей команды
-  - меняет значение каждый такт
-  - меняется через аргументы от Instruction Decoder
-  - может быть обнулен или увеличен на 1
-- **Instruction Decoder** -- декодировщик инструкций:
-  - отвечает за декодирование и исполнение инструкций
-  - отправляет управляющие сигналы
-  - может читать инструкцию из памяти, флаги, установленные АЛУ, и step_counter
-- **Ввод-вывод** -- memory-mapped через резервированные ячейки памяти, символьный. Ячейки задаются через конфигурацию.
-- **pс_counter** -- счётчик команд:
-    - инкрементируется после каждой инструкции или перезаписывается инструкцией перехода (с учетом смещения).
+- **Machine word** -- 64 bits, signed.
+- **Memory:**
+- is addressed via the registers `p_counter` and via the data bus `addr_bus`;
+- can be written from a register file;
+- can be read into a register file or in the `Instruction Decoder`;
+- has reserved cells for connecting I/O streams (set via configuration).
+- **Register file**:
+- consists of general purpose registers the size of a machine word
+- registers are arranged sequentially
+- there are 5 registers in total: *r1, r2, r3, r4, r5* (the number and names of registers can be changed in the configuration)
+- has two outputs and 1 input: `argument_1`, `argument_2`, `out'. They are installed using Instruction Decoder signals.
+- a register connected to `out` can be written from memory, an ALU (associated with it), a register connected to `argument_1` or an operand from `Instruction Decoder`
+- the register connected to `argument_1` can be read into the left input to the ALU (connected to the register file) or into the register connected to `out`
+- the register connected to `argument_2` can be read into memory or to the right input of the ALU (connected to the register file)
+- **ALU connected to a register file**:
+- has two inputs and 1 output
+- performs arithmetic operations with general-purpose registers and arguments from Instruction Decoder
+- controlled by signals from Instruction Decoder
+- sets the flag of equality to zero and the flag of a positive result based on the result of the calculated operation
+- can add, subtract, multiply, divide completely, get the remainder of the division
+- the result of calculations is recorded in a general-purpose register
+- **ALU connected to a register file**:
+- has two inputs and 1 output
+- performs arithmetic operations with `pc_couner` and arguments from Instruction Decoder
+- controlled by signals from Instruction Decoder
+- can add, subtract, multiply, divide completely, get the remainder of the division
+- the result of calculations is written to `pc_counter` or transmitted to the `addr_bus` bus
+- used to calculate the offset
+- **step_counter** -- step counter:
+- responsible for storing the step number of the current command
+- changes the value every clock cycle
+- changes via arguments from Instruction Decoder
+- can be reset to zero or increased by 1
+- **Instruction Decoder** -- Instruction Decoder:
+- responsible for decoding and executing instructions
+- sends control signals
+- can read instructions from memory, flags set by ALU, and step_counter
+- **I/O** -- memory-mapped via reserved memory cells, symbolic. Cells are set via configuration.
+- **p_counter** -- command counter:
+- incremented after each instruction or overwritten by the transition instruction (taking into account the offset).
 
-### Набор инструкций
+### Instruction Set
 
-Аргументы и их ограничения:
-- число в диапазоне [-2^64 ; 2^64 - 1]
-- смещение относительно текущего значения `pc_counter` - сумма не должна выходить за пределы памяти
-- адрес в памяти  - адрес не должен выходить за пределы памяти
-- регистр - должен находиться в регистровом файле
-- ограничения на аргументы у каждой отдельной инструкции выходят из языка программирования (см п.1)
+Arguments and their limitations:
+- number in the range [-2^64 ; 2^64 - 1]
+- offset relative to the current value of `pc_counter` - the amount should not exceed the memory limits
+- address in memory - the address must not go out of memory
+- register - must be in a register file
+- restrictions on the arguments of each individual instruction come out of the programming language (see paragraph 1)
 
-| Syntax                                  | Mnemonic                                | Ticks | Comment                                                                                                                                             |
-|:----------------------------------------|:----------------------------------------|-------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| `add/sub/mul/div/mod <arg> <arg> <arg>` | ADD/SUB/MUL/DIV/MOD `<arg> <arg> <arg>` | 3     | кол-во тактов фиксировано                                                                                                                           |
-| `cmp <arg> <arg>`                       | CMP `<arg>`                             | 2     | кол-во тактов фиксировано                                                                                                                           |
-| `mov <arg> <arg>`                       | MOV `<arg> <arg>`                       | 3     | кол-во тактов фиксировано                                                                                                                           |
-| `je, jne, jg, jmp <arg>`                | JE, JNE, JG, JMP `<arg> <arg>`          | 2-3   | кол-во тактов зависит от флагов АЛУ <br/>работают только с относительной адресацией                                                                 |
-| `inc/dec <arg>`                         | INC/DEC `<arg>`                         | 3     | кол-во тактов фиксировано                                                                                                                           |
-| `hlt`                                   | HLT                                     | 0     | вызывает остановку симуляции                                                                                                                        |
-| `data <arg>`                            | DATA `<arg>`                            | 0     | инструкция хранения данных - реализует ячейки памяти с данными                                                                                      |
-| `ld <arg> <arg>`                        | LD `<arg> <arg>`                        | 3-4   | Выполняет чтение из указанной ячейки памяти<br/>Поддерживает абсолютную и относительную адресации<br/>Количество тактов зависит от режима адресации |
-| `st <arg> <arg>`                        | ST `<arg> <arg>`                        | 2-3   | Выполняет запись в указанную ячейку памяти<br/>Поддерживает абсолютную и относительную адресации<br/>Количество тактов зависит от режима адресации  |
+| Syntax                                  | Mnemonic                                | Ticks | Comment                                                                                                                                              |
+|:----------------------------------------|:----------------------------------------|-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `add/sub/mul/div/mod <arg> <arg> <arg>` | ADD/SUB/MUL/div/MOD `<arg> <arg> <arg>` | 3     | number of clock cycles fixed                                                                                                                         |
+| `cmp <arg> <arg>`                       | cmp `<arg>`                             | 2     | number of clock cycles fixed                                                                                                                         |
+| `mov <arg> <arg>`                       | mov `<arg> <arg>`                       | 3     | number of clock cycles fixed                                                                                                                         |
+| `je, jne, jg, jmp <arg>`                | JE, JNE, JG, JMP `<arg> <arg>`          | 2-3   | number of clock cycles depends on ALU flags <br/>work only with relative addressing                                                                  |
+| `inc/dec <arg>`                         | INC/DEC `<arg>`                         | 3     | number of clock cycles fixed                                                                                                                         |
+| `hlt`                                   | HLT                                     | 0     | causes simulation to stop                                                                                                                            |
+| `data <arg>`                            | DATA `<arg>`                            | 0     | data storage instruction - implements memory cells with data                                                                                         |
+| `ld <arg> <arg>`                        | LD `<arg> <arg>`                        | 3-4   | Reads from the specified memory location<br/>Supports absolute and relative addressing<br/>The number of clock cycles depends on the addressing mode |
+| `st <arg> <arg>`                        | ST `<arg> <arg>`                        | 2-3   | Writes to the specified memory location<br/>Supports absolute and relative addressing<br/>The number of clock cycles depends on the addressing mode  |
 
-### Кодирование инструкций
+### Encoding instructions
 
-- Машинный код сериализуется в список JSON.
-- Один элемент списка, одна инструкция.
-- Инструкция имеет фиксированный размер - машинное слово
+- Machine code is serialized to a JSON list.
+- One list item, one instruction.
+- The instruction has a fixed size - machine word
 
-Пример:
+Example:
 
 ```json
 [{
@@ -229,134 +223,135 @@ operation_0_args ::= "HLT"
 ]
 ```
 
-где:
+where:
 
-- `opcode` -- строка с кодом операции;
-- `position` -- позиция инструкции в памяти
-- `args` -- аргументы инструкции:
-  - `mode` -- режим адресации аргумента
-  - `data` -- значение аргумента
+- `opcode` -- a string with the operation code;
+- `position' -- the position of the instruction in memory
+- `args' -- instruction arguments:
+- `mode' -- argument addressing mode
+- `data' -- argument value
 
-Типы данных в модуле [isa](./src/translation/isa.py), где:
+Data types in the [isa] module(./src/translation/isa.py ), where:
 
-- `Opcode` -- перечисление кодов операций;
-- `AddrMode` -- перечисление режимов аддресации:
-  - `REG` -- аргумент является регистром. Поле `data`: регистр
-  - `REL` -- аргумент отражает относительную адресацию. Поле `data`: смещение
-  - `ABS` -- аргумент отражает прямую адресацию. Поле `data`: адрес
-  - `DATA` -- аргумент является значением. Поле `data`: число
-- `Operation` -- структура для описания всей необходимой информации об инструкции.
-- `Argument` -- структура для описания всей необходимой информации об аргументе
+- `Opcode` -- enumeration of operation codes;
+- `AddrMode' -- enumeration of addressment modes:
+- `REG` -- the argument is a register. `data' field: register
+- `REL` -- the argument reflects relative addressing. Field `data': offset
+- `ABS' -- the argument reflects direct addressing. `data' field: address
+- `DATA' -- the argument is a value. `data` field: number
+- `Operation` -- a structure for describing all the necessary information about the instruction.
+- `Argument` -- a structure for describing all the necessary information about an argument
 
 
-## Транслятор
+## Translator
 
-Интерфейс командной строки: `translator.py <input_file> <target_file>"`
+Command line interface: `translator.py <input_file> <target_file>"`
 
-Реализовано в модуле: [translator](src/translation/translator.py)
+Implemented in the module: [translator](src/translation/translator.py )
 
-Этапы трансляции (функция `translate`):
+Translation stages (`translate` function):
 
-1. Препроцессирование исходного кода: удаление лишних пробелов, запятых, комментариев. Реализовано в функции `preprocessing` модуля [preprocessor](src/translation/preprocessor.py)
-2. Проверка наличия метки `.start`
-3. Преобразование `section .text` в машинный код (с учетом ограничений) - функция `parse_text`
-4. Преобразование `section .data` в машинный код (с учетом ограничений) - функция `parse_data`
-5. Объединение машинных кодов двух секций и определение адресов переменных внутри команд - функция `join_text_and_data`
-6. Установка стартового адреса программы (с учетом смещения относительно данных и зарезервированных ячеек) - функция `add_start_address`
+1. Preprocessing the source code: removing unnecessary spaces, commas, comments. Implemented in the `preprocessing` function of the [preprocessor] module (src/translation/preprocessor.py )
+2. Checking for the presence of the `.start` label
+3. Transform `section.text` to machine code (subject to restrictions) - function `parse_text`
+4. Conversion of `section .data` to machine code (subject to restrictions) - function `parse_data`
+5. Combining the machine codes of two sections and determining the addresses of variables inside commands - the `join_text_and_data` function
+6. Setting the start address of the program (taking into account the offset relative to the data and reserved cells) - the `add_start_address` function
 
-Правила генерации машинного кода:
+Rules for generating machine code:
 
-- один `Operation` (класс, описывающий операцию) -- одна инструкция;
-- в начале каждой программы стоит команда `jmp`, которая указывает на стартовый адрес
-- вместо регистров подставляются их имена (экземпляры enum `Register`)
-- вместо адресов в памяти подставляются сами адреса или адреса зарезервированных ячеек (если они используются)
-- вместо переменных подставляется смещение относительно текущего адреса,
-- вместо меток подставляется смещение относительно текущего адреса до ячеек памяти, на которые они указывают.
-- вместо символов подставляются их ASCII коды
-- числа остаются числами
+- one `Operation' (class describing the operation) -- one instruction;
+- at the beginning of each program there is a command `jmp`, which points to the starting address
+- instead of registers, their names are substituted (instances of enum `Register`)
+- instead of addresses in memory, the addresses themselves or the addresses of reserved cells are substituted (if they are used)
+- an offset relative to the current address is substituted instead of variables,
+- instead of labels, an offset relative to the current address to the memory cells they point to is substituted.
+- their ASCII codes are substituted instead of characters
+- numbers remain numbers
 
-## Модель процессора
-### Схема DataPath и ControlUnit
-![Схема DataPath и ControlUnit](scheme.png)
+## Processor model
+### DataPath and ControlUnit schema
+![DataPath and ControlUnit schema](scheme.png)
 ### DataPath
-Реализован в классе `DataPath`
+Implemented in the `DataPath` class
 
-- `memory` -- однопортовая, поэтому либо читаем, либо пишем.
-- `reg_file` -- устройство управления регистрами. Получает на вход сигналы с операндами и регистром для записи.
-- - `reg_file.argument_1` -- регистр, данные из которого будут поданы на левый вход АЛУ или на регистровый файл
-- - `reg_file.argument_2` -- регистр, данные из которого будут поданы на правый вход АЛУ или в память
-- - `reg_file.out` -- регистр, в который будут считаны данные при подаче сигнала
-- `addr_alu` -- АЛУ, вычисляющее относительный адрес.
-- - `addr_alu.left` -- данные с левого входа АЛУ
-- - `addr_alu.right` -- данные с правого входа АЛУ
-- `data_alu` -- АЛУ, выполняющее арифметические операции со значениями из регистрового файла.
-- - `data_alu.left` -- данные с левого входа АЛУ
-- - `data_alu.right` -- данные с правого входа АЛУ
-- `pc_counter` -- счетчик команд
-- `data_alu_bus` -- шина, выходящая из `data_alu` на `reg_file`.
-- `addr_alu_bus` -- шина, соединяющая выход с `addr_alu` и мультиплексор, определяющий значение `addr_bus`.
-- `addr_bus` -- шина, содержащая адрес для обращения (чтения или записи) в память. Соединяет мультиплексор и `memory`
-- `mem_bus` -- шина, соединяющая `memory` и `reg_file`
-- `input_buffer` -- буфер с входными данными (привязан к ячейке памяти)
-- `output_buffer` -- буфер с выходными данными (привязан к ячейке памяти)
+- `memory` is single-port, so we either read or write.
+- `reg_file' -- register management device. Receives input signals with operands and a register for writing.
+- - `reg_file.argument_1` -- the register from which data will be fed to the left input of the ALU or to the register file
+- - `reg_file.argument_2` -- the register from which data will be fed to the right input of the ALU or to memory
+- - `reg_file.out` -- the register into which data will be read when the signal is applied
+- `addr_alu` -- An ALU that calculates a relative address.
+- - `addr_alu.left' -- data from the left input of the ALU
+- - `addr_alu.right' -- data from the right input of the ALU
+- `data_alu` -- An ALU that performs arithmetic operations with values from a register file.
+- - `data_alu.left' -- data from the left input of the ALU
+- - `data_alu.right' -- data from the right input of the ALU
+- `pc_counter` -- command counter
+- `data_alu_bus` -- the bus that exits from `data_alu` to `reg_file`.
+- `addr_alu_bus' -- the bus connecting the output to `addr_alu` and the multiplexer defining the value of `addr_bus'.
+- `addr_bus` -- a bus containing an address for accessing (reading or writing) memory. Connects multiplexer and `memory`
+- `mem_bus' -- bus connecting `memory` and `reg_file`
+- `input_buffer' -- buffer with input data (bound to a memory cell)
+- `output_buffer' -- buffer with output data (bound to a memory cell)
 
-Сигналы:
+Signals:
 
-- `set_regs_args` -- подать сигнал RegFile с данными о регистрах 
-- `latch_register` -- защелкнуть данные, идущие в регистровый файл, на регистре `reg_file.out`. Источник данных выбирается в зависимости от сигнала `sel_reg`.
-- `latch_addr_bus` -- поместить данные на шину, определяющую адрес чтения / записи
-- `latch_pc` -- защелкнуть данные в счетчик команд
-- `set_data_alu_args (const_operand)` -- защелкнуть входы `data_alu`. При подаче const_operand помещается на правый вход (sel_data).
-- `set_addr_alu_args (const_operand)` -- защелкнуть входы `addr_alu`. При подаче const_operand помещается на правый вход (sel_data).
-- `execute_data_alu` -- рассчитать выходное значение `data_alu`, подав на него сигнал с операцией, закрепить его на шине `data_alu_bus`.
-- `execute_addr_alu` -- рассчитать выходное значение `addr_alu`, подав на него сигнал с операцией, закрепить его на шине `addr_alu_bus`.
-- `read` -- считать значение из памяти по адресу из `addr_bus` и поместить его на шину `mem_bus`.
-- `write` -- записать значение `reg_file.argument_2` в память по адресу из `addr_bus`.
+- `set_regs_args` -- send a RegFile signal with register data
+- `latch_register' -- snap the data going to the register file to the register `reg_file.out'. The data source is selected depending on the 'sel_reg` signal.
+- `latch_addr_bus' -- put data on the bus that defines the read/write address
+- `latch_pc` -- snap data into the command counter
+- `set_data_alu_args (const_operand)' -- snap the inputs `data_alu'. When feeding const_operand is placed on the right input (sel_data).
+- `set_addr_alu_args (const_operand)' -- snap the 'addr_alu` inputs. When feeding const_operand is placed on the right input (sel_data).
+- `execute_data_alu` -- calculate the output value of `data_alu' by sending a signal to it with an operation, attach it to the 'data_alu_bus` bus.
+- `execute_addr_alu` -- calculate the output value of `addr_alu` by sending a signal to it with an operation, attach it to the 'addr_alu_bus` bus.
+- `read` -- read the value from memory at the address from `addr_bus` and put it on the `mem_bus` bus.
+- `write` -- write the value of `reg_file.argument_2` to memory at the address from `addr_bus`.
 
-Флаги:
+Flags:
 
-- `_zero_flag` -- отражает наличие нулевого значения на выходе АЛУ, соединенного с регистровым файлом. Используется для условных переходов.
-- `_positive_flag` -- отражает наличие положительного значения на выходе АЛУ, соединенного с регистровым файлом. Используется для условных переходов.
+- `_zero_flag' -- reflects the presence of a zero value at the output of the ALU connected to the register file. Used for conditional transitions.
+- `_positive_flag` -- reflects the presence of a positive value at the output of the ALU connected to the register file. Used for conditional transitions.
 
-### ControlUnit
-Реализован в классе `ControlUnit`
-- Hardwired (реализовано полностью на python).
-- Моделирование на уровне тактов.
-- Трансляция инструкции в последовательность сигналов (с учетом текущего такта): `decode_and_execute_instruction`.
-- Чтение и декодирование инструкции занимает 1 такт
-- Содержит `step_counter`
 
-Сигналы:
+### Control Unit
+Implemented in the `Control Unit` class
+- Hardwired (implemented entirely in python).
+- Simulation at the clock level.
+- Translation of instructions into a sequence of signals (taking into account the current clock cycle): `decode_and_execute_instruction`.
+- Reading and decoding instructions takes 1 clock cycle
+- Contains `step_counter`
 
-- `latch_inc_program_counter` -- сигнал для увеличения счётчика команд на 1 в DataPath.
-- `latch_step_counter` -- защелкнуть значение счетчика шагов в ControlUnit (в зависимости от `seg_next`).
+Signals:
 
-Особенности работы модели:
+- `latch_inc_program_counter` -- a signal to increase the command counter by 1 in DataPath.
+- `- `latch_step_counter` -- snap the value of the step counter to ControlUnit (depending on `sag_next').
 
-- Для журнала состояний процессора используется стандартный модуль logging.
-- Количество инструкций для моделирования ограничено hardcoded константой.
-- Остановка моделирования осуществляется при помощи исключений:
-    - `IndexError` -- если нет данных для чтения из порта ввода-вывода;
-    - `StopIteration` -- если выполнена инструкция `HLT`.
-- Управление симуляцией реализовано в функции `simulate`.
+Features of the model:
 
-## Апробация
-Реализовано несколько видов тестов (использовался `unittest`):
- - интеграционные тесты: [integration_test](test/integration_test.py)
- - юнит-тесты транслятора: [unit_translator_test](test/unit_translator_test.py)
- - юнит-тесты валидации: [unit_validation_test](test/unit_validation_test.py)
- - юнит-тесты процессора: [unit_machine_test](test/unit_machine_test.py)
+- The standard logging module is used for the processor status log.
+- The number of simulation instructions is limited by a hardcoded constant.
+- Simulation is stopped using exceptions:
+- `IndexError` -- if there is no data to read from the I/O port;
+- `StopIteration' -- if the `HLT` instruction is executed.
+- Simulation control is implemented in the `simulate` function.
 
-Все материалы, использующиеся в тестах: [test](test)
+## Approbation
+Several types of tests were implemented (`unittest` was used):
+- integration tests: [integration_test](test/integration_test.py )
+- translator unit tests: [unit_translator_test](test/unit_translator_test.py )
+- unit validation tests: [unit_validation_test](test/unit_validation_test.py )
+- CPU unit tests: [unit_machine_test](test/unit_machine_test.py )
 
-В интеграционных тестах (и частично в юнит-тестах транслятора) реализовано 3 алгоритма:
-  - [hello_world](resources/source/hello.asm)
-  - [cat](resources/source/cat.asm)
-  - [prob5](resources/source/prob5.asm)
+All materials used in tests: [test](test)
 
-Для остальных тестов алгоритмы были написаны отдельно и отражают одну из ключевых зон работы модуля:
-  - юнит-тесты процессора: [examples_correct](resources/examples_correct)
-  - юнит-тесты валидатора: [incorrect](resources/incorrect)
+There are 3 algorithms implemented in integration tests (and partially in translator unit tests):
+- [hello_world](resources/source/hello.asm)
+- [cat](resources/source/cat.asm)
+- [prob5](resources/source/pro b5.asm)
+
+For the rest of the tests, the algorithms were written separately and reflect one of the key areas of the module:
+- processor unit tests: [examples_correct](resources/examples_correct)
+- validator unit tests: [incorrect](resources/incorrect)
 
 ### CI
 ```yaml
@@ -373,20 +368,20 @@ lab3:
     - find . -type f -name "*.py" | xargs -t mypy --check-untyped-defs --explicit-package-bases --namespace-packages
 ```
 
-где:
+where:
 
-- `python3-coverage` -- формирование отчёта об уровне покрытия исходного кода.
-- `pytest` -- утилита для запуска тестов.
-- `pep8` -- утилита для проверки форматирования кода. `E501` (длина строк) отключено.
-- `pylint` -- утилита для проверки качества кода. Некоторые правила отключены с целью упрощения кода.
-- `mypy` -- утилита для проверки корректности статической типизации.
-  - `--check-untyped-defs` -- дополнительная проверка.
-  - `--explicit-package-bases` и `--namespace-packages` -- помогает правильно искать импортированные модули.
-- Docker image `python-tools` включает в себя все перечисленные утилиты. Его конфигурация: [Dockerfile](./Dockerfile).
+- `python3-coverage` -- generating a report on the level of coverage of the source code.
+- 'pytest' -- utility for running tests.
+- `pep8' -- utility for checking the formatting of the code. `E501' (string length) is disabled.
+- 'pylint' -- a utility for checking the quality of the code. Some rules are disabled in order to simplify the code.
+- `mypy' is a utility for checking the correctness of static typing.
+-`--check-untyped-defs' -- additional check.
+- `--explicit-package-bases` and `--namespace-packages` -- helps to search for imported modules correctly.
+- Docker image `python-tools` includes all the utilities listed. Its configuration is [Dockerfile](./Dockerfile).
 
-### Пример использования
+### Usage example
 
-Пример использования и журнал работы процессора на примере `cat`:
+Usage example and processor operation log using the example of `cat`:
 
 ``` commandline
 $ cat resources/input.txt
@@ -671,8 +666,8 @@ instr_counter: 26 ticks: 69
 ```
 
 
-| ФИО         | алг.  | LoC | code байт | code инстр. | инстр. | такт. | вариант      |
-|-------------|-------|-----|-----------|-------------|--------|-------|--------------|
-| Мокров С.А. | hello | 41  | -         | 38          | 28     | 83    | см. в начале |
-| Мокров С.А. | cat   | 6   | -         | 4           | 26     | 69    | см. в начале |
-| Мокров С.А. | prob5 | 39  | -         | 27          | 1475   | 4196  | см. в начале |
+| Name / Surname | alg.  | LoC | code byte | code instr. | instr. | tick. | variant               |
+|----------------|-------|-----|-----------|-------------|--------|-------|-----------------------|
+| Мокров С.А.    | hello | 41  | -         | 38          | 28     | 83    | look at the beginning |
+| Мокров С.А.    | cat   | 6   | -         | 4           | 26     | 69    | look at the beginning |
+| Мокров С.А.    | prob5 | 39  | -         | 27          | 1475   | 4196  | look at the beginning |
