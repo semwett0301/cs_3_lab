@@ -1,1 +1,59 @@
-<mxfile host="app.diagrams.net" modified="2023-03-06T15:30:58.017Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36" version="20.8.4" etag="pU6EEV-ZnRMxt4Brf14l" type="github"><diagram id="5p9WlR0LO5y1nEMhgR67">UzV2zq1wL0osyPDNT0nNUTV2VTV2LsrPL4GwciucU3NyVI0MMlNUjV1UjYwMgFjVyA2HrCFY1qAgsSg1rwSLBiADYTaQg2Y1AA==</diagram></mxfile>
+<mxfile host="app.diagrams.net" modified="2023-03-06T15:47:42.106Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36" version="20.8.4" etag="LlWNodnwD2GbVH8zLCIs" type="github">
+  <diagram id="aIM_jsoyiGAlrIg2_Qq3" name="Page-1">
+    <mxGraphModel dx="1400" dy="732" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="tMtfQr8iPreiPON-Gcuw-19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="tMtfQr8iPreiPON-Gcuw-1" target="tMtfQr8iPreiPON-Gcuw-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tMtfQr8iPreiPON-Gcuw-1" value="&lt;b&gt;1:&lt;/b&gt; current project with the current unit and integration tests&lt;br&gt;&lt;i&gt;(wrote by unittest)&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="330" y="20" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tMtfQr8iPreiPON-Gcuw-20" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="tMtfQr8iPreiPON-Gcuw-2" target="tMtfQr8iPreiPON-Gcuw-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tMtfQr8iPreiPON-Gcuw-2" value="&lt;b&gt;2: &lt;/b&gt;creating mutation test for th current test cover and improve it using results" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="330" y="120" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tMtfQr8iPreiPON-Gcuw-21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="tMtfQr8iPreiPON-Gcuw-3" target="tMtfQr8iPreiPON-Gcuw-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tMtfQr8iPreiPON-Gcuw-3" value="&lt;b&gt;3:&amp;nbsp;&lt;/b&gt;creating a new GUI module using PyQt" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="330" y="220" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tMtfQr8iPreiPON-Gcuw-22" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="tMtfQr8iPreiPON-Gcuw-4" target="tMtfQr8iPreiPON-Gcuw-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tMtfQr8iPreiPON-Gcuw-4" value="&lt;b&gt;4:&amp;nbsp;&lt;/b&gt;creating incorrect unit and integration tests for a new module" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="330" y="320" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tMtfQr8iPreiPON-Gcuw-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;" edge="1" parent="1" source="tMtfQr8iPreiPON-Gcuw-6" target="tMtfQr8iPreiPON-Gcuw-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tMtfQr8iPreiPON-Gcuw-6" value="&lt;b&gt;5.1: &lt;/b&gt;fix the mutation test" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="140" y="580" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tMtfQr8iPreiPON-Gcuw-12" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.frame;dx=10;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="490" y="570" width="190" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="tMtfQr8iPreiPON-Gcuw-13" value="&lt;b style=&quot;border-color: var(--border-color);&quot;&gt;5.2:&amp;nbsp;&lt;/b&gt;fix current test cover,&lt;br&gt;finish report" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="505" y="590" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="tMtfQr8iPreiPON-Gcuw-23" value="NO" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="tMtfQr8iPreiPON-Gcuw-17" target="tMtfQr8iPreiPON-Gcuw-6">
+          <mxGeometry x="-0.5802" y="-10" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tMtfQr8iPreiPON-Gcuw-24" value="YES" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="tMtfQr8iPreiPON-Gcuw-17" target="tMtfQr8iPreiPON-Gcuw-12">
+          <mxGeometry x="-0.5696" y="10" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="tMtfQr8iPreiPON-Gcuw-17" value="did the mutation tests correctly determine the incorrectness of the test coverage?" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.start_2;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="282.5" y="420" width="215" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
